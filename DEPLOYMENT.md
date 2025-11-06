@@ -1,12 +1,11 @@
 # Deployment Guide
 
-This guide covers deploying the DreamUp Games QA system to production using Railway (backend) and Cloudflare Pages (frontend).
+This guide covers deploying the DreamUp Games QA backend to production using Railway.
 
 ## Prerequisites
 
 - [Railway Account](https://railway.app/)
-- [Cloudflare Account](https://dash.cloudflare.com/)
-- [GitHub Repository](https://github.com/) (connected to both services)
+- [GitHub Repository](https://github.com/) (connected to Railway)
 - OpenAI API Key
 
 ---
@@ -115,76 +114,7 @@ Expected response:
 
 ---
 
-## Part 2: Frontend Deployment (Cloudflare Pages)
-
-### 1. Create Cloudflare Pages Project
-
-1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com/)
-2. Go to **"Pages"** → **"Create a project"**
-3. Connect your GitHub repository
-4. Configure build settings:
-
-**Project name:** \`dreamup-qa-frontend\`
-
-**Production branch:** \`main\`
-
-**Framework preset:** \`Next.js\`
-
-**Build command:**
-\`\`\`bash
-cd frontend && npm install && npm run build
-\`\`\`
-
-**Build output directory:**
-\`\`\`
-frontend/out
-\`\`\`
-
-**Root directory:** \`/\` (leave as root, we specify frontend in build command)
-
-### 2. Configure Environment Variables
-
-In Cloudflare Pages project settings → **"Environment variables"**:
-
-\`\`\`env
-NEXT_PUBLIC_API_URL=https://your-backend-url.railway.app
-NEXT_PUBLIC_WS_URL=https://your-backend-url.railway.app
-NODE_VERSION=20.11.0
-\`\`\`
-
-### 3. Deploy
-
-1. Click **"Save and Deploy"**
-2. Cloudflare will build and deploy your frontend
-3. You'll receive a URL like: \`https://dreamup-qa-frontend.pages.dev\`
-
-### 4. Configure Custom Domain (Optional)
-
-1. Go to **"Custom domains"**
-2. Click **"Set up a custom domain"**
-3. Enter your domain (e.g., \`qa.dreamup.com\`)
-4. Follow DNS configuration instructions
-5. Wait for SSL certificate (automatic via Cloudflare)
-
-### 5. Update Backend CORS
-
-Update Railway backend environment variable:
-
-Or if using custom domain:
-
-Redeploy backend for changes to take effect.
-
-### 6. Test Frontend
-
-Visit your Cloudflare Pages URL and verify:
-- ✅ Dashboard loads
-- ✅ Statistics display correctly
-- ✅ Can create new test
-- ✅ Can view test results
-
----
-
-## Part 3: Post-Deployment Configuration
+## Part 2: Post-Deployment Configuration
 
 ### Generate API Keys
 
@@ -209,11 +139,6 @@ railway run npm run prisma:seed
 - Monitor metrics: **"Metrics"** tab
 - Set up alerts: **"Settings"** → **"Alerts"**
 
-**Cloudflare Pages:**
-- View deployments: Cloudflare Dashboard → Pages → Your Project
-- Check analytics: **"Analytics"** tab
-- Review build logs: Click on any deployment
-
 ### Enable WebSocket (Railway)
 
 Railway automatically supports WebSocket connections. Ensure:
@@ -227,17 +152,10 @@ Railway automatically supports WebSocket connections. Ensure:
 
 ### Automatic Deployments
 
-Both Railway and Cloudflare Pages will automatically deploy when you push to your main branch.
+Railway will automatically deploy when you push to your main branch.
 
 **Disable auto-deploy** (optional):
 - **Railway**: Settings → Deploy → Uncheck "Auto-deploy"
-- **Cloudflare**: Settings → Builds & deployments → Disable automatic deployments
-
-### Preview Deployments
-
-**Cloudflare Pages** automatically creates preview deployments for pull requests.
-
-**Railway** requires manual configuration for PR previews.
 
 ---
 
@@ -275,14 +193,8 @@ railway run npx prisma migrate reset
 - Ensure backend CORS middleware is configured correctly
 
 **Environment variables not working:**
-- Cloudflare Pages requires \`NEXT_PUBLIC_\` prefix for client-side vars
 - Rebuild after changing environment variables
-- Clear Cloudflare cache if changes don't appear
-
-**Build fails:**
-- Check build command includes \`cd frontend\`
-- Verify Node version is set in environment variables
-- Review Cloudflare build logs
+- Verify all required environment variables are set in Railway
 
 ### Performance Issues
 
@@ -326,7 +238,7 @@ railway run npx prisma migrate reset
 - Implement cleanup job for old artifacts (>30 days)
 
 **Alternative: Cloud Storage**
-- Migrate to Cloudflare R2 or AWS S3
+- Migrate to AWS S3 or other cloud storage
 - Update storage adapter in backend code
 
 ---
@@ -364,10 +276,6 @@ Store securely (not in git!).
 - Developer: $20/month (shared CPU, 8GB RAM)
 - Pro: Custom pricing
 
-**Cloudflare Pages (Frontend):**
-- Free: Unlimited requests, 500 builds/month
-- Pro: $20/month (additional features)
-
 **Railway Volumes:**
 - $0.25/GB/month
 
@@ -396,8 +304,6 @@ Store securely (not in git!).
 ## Support
 
 - **Railway Docs:** https://docs.railway.app/
-- **Cloudflare Pages Docs:** https://developers.cloudflare.com/pages/
 - **Prisma Docs:** https://www.prisma.io/docs/
-- **Next.js Deployment:** https://nextjs.org/docs/deployment
 
 For project-specific issues, open an issue on GitHub.

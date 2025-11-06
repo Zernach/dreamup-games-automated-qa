@@ -9,14 +9,15 @@ coverage/
 # Production
 dist/
 build/
-.next/
-out/
+.yarn/*
+.yarn/install-state.gz
 
 # Environment
 .env
 .env.local
 .env.development.local
 .env.test.local
+.env.production
 .env.production.local
 
 # Logs

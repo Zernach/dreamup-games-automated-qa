@@ -215,9 +215,9 @@ The system provides multiple access methods to serve different user needs:
 
 **Full-stack monorepo structure:**
 - `/backend` - Express server with REST API
-- `/frontend` - React/Next.js web application
+- `/frontend` - React + Vite web application
 - `/shared` - Shared TypeScript types and utilities
-- Clear separation allows independent deployment to Railway (backend) and Cloudflare (frontend)
+- Clear separation allows independent deployment to Railway (backend)
 
 ### Service Architecture
 
@@ -243,7 +243,7 @@ The system provides multiple access methods to serve different user needs:
 **Language & Runtime:**
 - TypeScript 5.x for full-stack type safety
 - Node.js 20.x for backend Express server on Railway
-- React 18+ with Next.js for frontend on Cloudflare Pages
+- React 18+ with Vite for frontend build tooling
 
 **Browser Automation:**
 - Playwright as primary browser automation library
@@ -262,9 +262,10 @@ The system provides multiple access methods to serve different user needs:
 - Database migrations managed via Prisma Migrate
 
 **Frontend Framework:**
-- React 18 with Next.js for SSR and optimal Cloudflare Pages deployment
+- React 18 with Vite for fast build times and development experience
+- React Router for client-side routing
 - TailwindCSS for styling
-- SWR or TanStack Query for data fetching
+- TanStack Query for data fetching
 - Zustand or React Context for state management
 
 **API Design:**
@@ -724,7 +725,7 @@ so that **test reports include AI-powered playability assessments and issue dete
 **Key Deliverables:**
 - Express REST API with test endpoints
 - PostgreSQL database with Prisma ORM
-- React frontend with Next.js on Cloudflare
+- React + Vite frontend with client-side routing
 - WebSocket support for real-time progress
 - Web UI: Test submission form, results display, history dashboard
 - Railway backend deployment

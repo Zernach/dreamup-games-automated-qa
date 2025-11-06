@@ -185,17 +185,17 @@ so that **I can see what's happening during the 2-minute test cycle**.
 
 ---
 
-### Story 4.5: React Frontend with Next.js Setup
+### Story 4.5: React Frontend with Vite Setup
 
 **Story Points:** 3 | **Priority:** P0
 
 As a **frontend developer**,
-I want **a React application with Next.js configured for Cloudflare Pages**,
+I want **a React application with Vite configured for development**,
 so that **I can build the web UI**.
 
 **Acceptance Criteria:**
 
-1. Next.js project created in `/frontend`
+1. Vite + React project created in `/frontend`
 2. Configured for static export to Cloudflare Pages
 3. TailwindCSS installed and configured
 4. TypeScript configured with strict mode
@@ -207,8 +207,9 @@ so that **I can build the web UI**.
 10. Dev server runs: `npm run dev` serves app locally
 
 **Technical Notes:**
-- Use Next.js 14+ with App Router
-- Configure `output: 'export'` for Cloudflare Pages
+- Use Vite 5+ with React 18+
+- Use React Router for client-side routing
+- Configure for SPA mode with client-side routing
 - Use Tailwind CSS 3.x
 - Consider shadcn/ui for component library
 
@@ -348,14 +349,11 @@ so that **the React UI is accessible to users**.
 
 **Acceptance Criteria:**
 
-1. Cloudflare Pages project created and linked to GitHub repository
-2. Frontend service configured to deploy from `/frontend` directory
-3. Build command configured: `npm install && npm run build`
-4. Output directory configured: `out` (Next.js static export)
-5. Environment variables configured in Cloudflare:
-   - NEXT_PUBLIC_API_URL (Railway backend URL)
-   - NEXT_PUBLIC_WS_URL (WebSocket URL)
-6. Custom domain configured (optional for MVP)
+1. Frontend build process configured with Vite
+2. Environment variables configured:
+   - VITE_API_URL (Backend URL)
+3. Static assets optimized for production
+4. Build output generated in `/frontend/dist`
 7. HTTPS enabled automatically
 8. Deployment succeeds and site is accessible
 9. Frontend connects to backend API successfully
@@ -528,7 +526,7 @@ so that **we confirm production readiness**.
 │                   Cloudflare Pages (Frontend)                │
 │                                                               │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │       React + Next.js (Static Site)                  │   │
+│  │       React + Vite (SPA)                             │   │
 │  │                                                       │   │
 │  │  Pages:                                              │   │
 │  │  - /dashboard (Test History)                        │   │

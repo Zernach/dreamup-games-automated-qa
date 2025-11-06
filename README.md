@@ -10,8 +10,8 @@ This full-stack application provides automated testing and quality assessment fo
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                   Cloudflare Pages (Frontend)                │
-│                      React + Next.js                         │
+│                        Frontend                              │
+│                     React + Vite                             │
 └───────────────────────┬─────────────────────────────────────┘
                         │
                         ▼
@@ -45,9 +45,9 @@ dreamup-games-qa/
 │   ├── prisma/           # Database schema & migrations
 │   └── package.json
 │
-├── frontend/             # Next.js React application
+├── frontend/             # React + Vite application
 │   ├── src/
-│   │   ├── app/          # Next.js pages (App Router)
+│   │   ├── pages/        # Page components
 │   │   ├── components/   # React components
 │   │   ├── lib/          # API client & utilities
 │   │   └── styles/       # Global styles
@@ -65,7 +65,7 @@ dreamup-games-qa/
 - ✅ Full-stack monorepo with TypeScript
 - ✅ Express REST API with validation
 - ✅ PostgreSQL database with Prisma ORM
-- ✅ Next.js frontend with TailwindCSS
+- ✅ React + Vite frontend with TailwindCSS
 - ✅ Test submission and results viewing
 - ✅ Dashboard with statistics and test history
 - ✅ Shared type definitions
@@ -77,7 +77,7 @@ dreamup-games-qa/
 - 🚧 API authentication & rate limiting
 
 ### Planned
-- 📋 Railway & Cloudflare Pages deployment
+- 📋 Backend deployment (Railway)
 - 📋 End-to-end validation testing
 - 📋 Screenshot & log artifact storage
 
@@ -114,10 +114,9 @@ DATABASE_URL="postgresql://user:password@localhost:5432/dreamup_qa"
 OPENAI_API_KEY=your_key_here
 \`\`\`
 
-**Frontend** (\`frontend/.env.local\`):
+**Frontend** (\`frontend/.env\`):
 \`\`\`env
-NEXT_PUBLIC_API_URL=http://localhost:3000
-NEXT_PUBLIC_WS_URL=http://localhost:3000
+VITE_API_URL=http://localhost:3000
 \`\`\`
 
 4. **Set up the database**
@@ -210,9 +209,7 @@ See [backend/prisma/schema.prisma](./backend/prisma/schema.prisma) for full sche
 
 ## Deployment
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions for:
-- Railway (Backend + PostgreSQL)
-- Cloudflare Pages (Frontend)
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions for Railway (Backend + PostgreSQL).
 
 ## Testing
 
@@ -244,6 +241,5 @@ This project is licensed under the MIT License - see [LICENSE](./LICENSE) file f
 - [Playwright](https://playwright.dev/) for browser automation
 - [Anthropic Claude](https://www.anthropic.com/) for AI evaluation
 - [Prisma](https://www.prisma.io/) for database ORM
-- [Next.js](https://nextjs.org/) for React framework
+- [Vite](https://vitejs.dev/) for build tooling
 - [Railway](https://railway.app/) for backend hosting
-- [Cloudflare Pages](https://pages.cloudflare.com/) for frontend hosting

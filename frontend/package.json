@@ -1,20 +1,22 @@
 {
   "name": "frontend",
   "version": "1.0.0",
+  "type": "module",
   "description": "React frontend for DreamUp Games QA",
   "scripts": {
-    "dev": "next dev -p 3001",
-    "build": "next build",
-    "start": "next start -p 3001",
-    "lint": "next lint",
-    "test": "vitest"
+    "dev": "vite --port 3001",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "test": "vitest",
+    "deploy": "yarn build && npx wrangler pages deploy ./dist --project-name=dreamup"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.59.20",
-    "next": "^14.2.15",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.2",
+    "react-router-dom": "^6.28.0",
     "socket.io-client": "^4.8.1",
     "zod": "^3.23.8"
   },
@@ -22,12 +24,17 @@
     "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.0",
-    "eslint-config-next": "^14.2.15",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.12",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
     "typescript": "^5.6.3",
+    "vite": "^5.4.11",
     "vitest": "^2.1.4"
   }
 }
