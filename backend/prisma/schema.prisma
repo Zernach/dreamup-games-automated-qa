@@ -1,0 +1,163 @@
+// Prisma Schema for DreamUp Games QA System
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum TestStatus {
+  pending
+  running
+  completed
+  failed
+  partial
+}
+
+enum Severity {
+  critical
+  major
+  minor
+}
+
+enum IssueType {
+  rendering
+  interaction
+  loading
+  stability
+  performance
+}
+
+enum LogLevel {
+  error
+  warning
+  info
+  log
+  debug
+}
+
+enum Grade {
+  A
+  B
+  C
+  D
+  F
+}
+
+// Main Test Model
+model Test {
+  id                String      @id @default(uuid())
+  gameUrl           String
+  status            TestStatus  @default(pending)
+  playabilityScore  Float?
+  grade             Grade?
+  confidence        Float?
+  duration          Int?        // in milliseconds
+  reasoning         String?     @db.Text
+
+  // Score components (JSON)
+  scoreVisual       Float?
+  scoreStability    Float?
+  scoreInteraction  Float?
+  scoreLoad         Float?
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  // Relations
+  screenshots       Screenshot[]
+  issues            Issue[]
+  consoleLogs       ConsoleLog[]
+  networkErrors     NetworkError[]
+
+  @@index([gameUrl])
+  @@index([createdAt])
+  @@index([status])
+  @@map("tests")
+}
+
+// Issue Model
+model Issue {
+  id          String     @id @default(uuid())
+  testId      String
+  severity    Severity
+  type        IssueType
+  description String     @db.Text
+  confidence  Float
+  evidence    String[]   // Array of file paths or log references
+  timestamp   DateTime   @default(now())
+
+  // Relations
+  test        Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([testId])
+  @@index([severity])
+  @@map("issues")
+}
+
+// Screenshot Model
+model Screenshot {
+  id        String   @id @default(uuid())
+  testId    String
+  label     String   // e.g., "initial-load", "post-start", "mid-game"
+  filePath  String
+  fileSize  Int
+  timestamp DateTime @default(now())
+
+  // Relations
+  test      Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([testId])
+  @@map("screenshots")
+}
+
+// Console Log Model
+model ConsoleLog {
+  id              String   @id @default(uuid())
+  testId          String
+  level           LogLevel
+  message         String   @db.Text
+  occurrenceCount Int      @default(1)
+  timestamp       DateTime @default(now())
+
+  // Relations
+  test            Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([testId])
+  @@index([level])
+  @@map("console_logs")
+}
+
+// Network Error Model
+model NetworkError {
+  id           String   @id @default(uuid())
+  testId       String
+  url          String
+  statusCode   Int?
+  errorMessage String   @db.Text
+  critical     Boolean  @default(false)
+  timestamp    DateTime @default(now())
+
+  // Relations
+  test         Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([testId])
+  @@index([critical])
+  @@map("network_errors")
+}
+
+// API Key Model (for authentication)
+model ApiKey {
+  id         String   @id @default(uuid())
+  key        String   @unique
+  name       String
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime?
+
+  @@index([key])
+  @@map("api_keys")
+}

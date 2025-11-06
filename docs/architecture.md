@@ -873,7 +873,7 @@ Output: ./output/{test-id}/
 │  - Runtime: Node.js 20.x                    │
 │  - Memory: 512MB-1GB                        │
 │  - Persistent Process                       │
-│  - Environment Variables: ANTHROPIC_API_KEY│
+│  - Environment Variables: OPENAI_API_KEY  │
 │                           DATABASE_URL      │
 │                           PORT              │
 └──────────────┬──────────────────────────────┘

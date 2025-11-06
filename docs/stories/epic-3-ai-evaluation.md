@@ -65,7 +65,7 @@ so that **I can reliably send evidence to AI models for analysis**.
 
 1. LLMClient class created in src/modules/evaluator/llm-client.ts
 2. Supports Anthropic Claude 3.5 Sonnet API with vision capabilities
-3. API key loaded from environment variable (ANTHROPIC_API_KEY)
+3. API key loaded from environment variable (OPENAI_API_KEY)
 4. Validates API key exists before making requests (fail fast with clear error message)
 5. Implements request method with retry logic: 3 attempts with exponential backoff (1s, 2s, 4s)
 6. Handles rate limiting (429 status) with appropriate backoff and retry

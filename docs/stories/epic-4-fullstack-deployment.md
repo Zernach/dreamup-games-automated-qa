@@ -77,7 +77,7 @@ so that **tests can be triggered and results retrieved programmatically**.
 5. CORS configuration for Cloudflare frontend domain
 6. Health check endpoint: GET `/health`
 7. API returns JSON responses with consistent structure
-8. Environment variables: PORT, DATABASE_URL, ANTHROPIC_API_KEY
+8. Environment variables: PORT, DATABASE_URL, OPENAI_API_KEY
 9. Server starts successfully and listens on configured port
 10. Integration tests validate all API endpoints
 
@@ -321,7 +321,7 @@ so that **the Express server runs in production**.
 3. PostgreSQL addon added and connected
 4. Environment variables configured in Railway:
    - DATABASE_URL (auto-configured by Railway)
-   - ANTHROPIC_API_KEY
+   - OPENAI_API_KEY
    - PORT (default: 3000)
    - NODE_ENV=production
 5. Build command configured: `npm install && npx prisma generate && npm run build`
