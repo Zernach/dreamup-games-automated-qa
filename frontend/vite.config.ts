@@ -11,6 +11,17 @@ export default defineConfig({
     },
     server: {
         port: 3001,
+        host: 'localhost', // Explicitly bind to localhost only
+        strictPort: true,
+        hmr: {
+            protocol: 'ws',
+            host: 'localhost', // Don't allow network discovery
+        },
+    },
+    preview: {
+        port: 3001,
+        host: 'localhost',
+        strictPort: true,
     },
 });
 
