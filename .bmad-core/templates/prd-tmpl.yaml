@@ -108,14 +108,14 @@ sections:
     elicit: true
     choices:
       repository: [Monorepo, Polyrepo]
-      architecture: [Monolith, Microservices, Serverless]
+      architecture: [Monolith, Microservices, Server]
       testing: [Unit Only, Unit + Integration, Full Testing Pyramid]
     sections:
       - id: repository-structure
         title: "Repository Structure: {Monorepo|Polyrepo|Multi-repo}"
       - id: service-architecture
         title: Service Architecture
-        instruction: "CRITICAL DECISION - Document the high-level service architecture (e.g., Monolith, Microservices, Serverless functions within a Monorepo)."
+        instruction: "CRITICAL DECISION - Document the high-level service architecture (e.g., Monolith, Microservices, Server functions within a Monorepo)."
       - id: testing-requirements
         title: Testing Requirements
         instruction: "CRITICAL DECISION - Document the testing requirements, unit only, integration, e2e, manual, need for manual testing convenience methods)."

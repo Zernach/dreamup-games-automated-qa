@@ -120,7 +120,7 @@ sections:
         title: Architectural Patterns
         instruction: |
           List patterns that will guide both frontend and backend development. Include patterns for:
-          - Overall architecture (e.g., Jamstack, Serverless, Microservices)
+          - Overall architecture (e.g., Jamstack, Server, Microservices)
           - Frontend patterns (e.g., Component-based, State management)
           - Backend patterns (e.g., Repository, CQRS, Event-driven)
           - Integration patterns (e.g., BFF, API Gateway)
@@ -446,7 +446,7 @@ sections:
         instruction: Based on platform choice, define service organization.
         sections:
           - id: serverless-architecture
-            condition: Serverless architecture chosen
+            condition: Server architecture chosen
             sections:
               - id: function-organization
                 title: Function Organization

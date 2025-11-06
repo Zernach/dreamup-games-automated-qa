@@ -127,7 +127,7 @@ template: 'As a {{user_type}}, I want {{action}}, so that {{benefit}}.'
 
 ```yaml
 choices:
-  architecture: [Monolith, Microservices, Serverless]
+  architecture: [Monolith, Microservices, Server]
   testing: [Unit Only, Unit + Integration, Full Pyramid]
 ```
 

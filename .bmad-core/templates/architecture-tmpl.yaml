@@ -85,7 +85,7 @@ sections:
         instruction: |
           Based on the PRD's Technical Assumptions section, describe:
 
-          1. The main architectural style (e.g., Monolith, Microservices, Serverless, Event-Driven)
+          1. The main architectural style (e.g., Monolith, Microservices, Server, Event-Driven)
           2. Repository structure decision from PRD (Monorepo/Polyrepo)
           3. Service architecture decision from PRD
           4. Primary user interaction flow or data flow at a conceptual level
@@ -113,13 +113,13 @@ sections:
           4. These patterns should align with the PRD's technical assumptions and project goals
 
           Common patterns to consider:
-          - Architectural style patterns (Serverless, Event-Driven, Microservices, CQRS, Hexagonal)
+          - Architectural style patterns (Server, Event-Driven, Microservices, CQRS, Hexagonal)
           - Code organization patterns (Dependency Injection, Repository, Module, Factory)
           - Data patterns (Event Sourcing, Saga, Database per Service)
           - Communication patterns (REST, GraphQL, Message Queue, Pub/Sub)
         template: "- **{{pattern_name}}:** {{pattern_description}} - _Rationale:_ {{rationale}}"
         examples:
-          - "**Serverless Architecture:** Using AWS Lambda for compute - _Rationale:_ Aligns with PRD requirement for cost optimization and automatic scaling"
+          - "**Server Architecture:** Using Railway Server for compute - _Rationale:_ Aligns with PRD requirement for cost optimization and automatic scaling"
           - "**Repository Pattern:** Abstract data access logic - _Rationale:_ Enables testing and future database migration flexibility"
           - "**Event-Driven Communication:** Using SNS/SQS for service decoupling - _Rationale:_ Supports async processing and system resilience"
 
