@@ -96,17 +96,27 @@ IMPORTANT: For canvas-based games (games rendered in a <canvas> element):
 For puzzle/strategy games: prioritize moves that solve the puzzle or advance toward winning
 For action games: suggest sequences of moves that complete levels or objectives
 
+GAME STATE AWARENESS:
+- If you see a start screen or menu, suggest clicking "Start" or "Play" IMMEDIATELY
+- If you see gameplay, suggest strategic moves to progress toward winning
+- If you see a game over state, suggest clicking "New Game" or "Play Again" to start another round
+- Analyze the CURRENT state and suggest actions that move forward from that state
+
 Return JSON with:
-- detectedElements: Array of strings describing visible elements (start buttons, game pieces, score displays, canvas, menus, etc.)
+- detectedElements: Array of strings describing visible elements (start buttons, game pieces, score displays, canvas, menus, game over screens, etc.)
+  - EXPLICITLY mention if you see: "start button", "new game button", "game over screen", "win/loss message", "play again button"
 - suggestedActions: Array of {action: string, target: string, reason: string}
   - action can be: "click", "press key", "hover", "scroll", "drag"
   - target describes what to interact with (e.g., "canvas", "start button", "ace of spades card", "arrow keys")
   - reason explains how this action advances toward COMPLETING and WINNING the game
-  - PRIORITIZE actions that: 1) Start the game, 2) Make winning moves, 3) Complete the game
-- visualAssessment: String describing visual quality, current game state, and what needs to be done to win
+  - PRIORITIZE actions that: 1) Start the game, 2) Make winning moves, 3) Complete the game, 4) Start a new game after completion
+  - If the game is in a start state, the FIRST action MUST be to start/begin the game
+  - If the game is in an end state, the FIRST action MUST be to restart/play again
+- visualAssessment: String describing visual quality, CURRENT GAME STATE (menu/playing/game over), and what needs to be done next
+  - Explicitly state if you see: "Game is in START menu state", "Game is ACTIVELY PLAYING", "Game is in GAME OVER/COMPLETE state"
 - interactivityScore: Number 0-100 indicating how interactive the game appears
 
-Your action sequence should be strategic, not random. Aim to FINISH at least one complete game session!`,
+Your action sequence should be strategic, not random. Aim to FINISH at least one complete game session! Focus on progressing the game state forward.`,
               },
               {
                 type: 'image_url',
@@ -206,9 +216,17 @@ Look for evidence of game completion such as: score screens, win/loss messages, 
 EVALUATION CRITERIA:
 1. Did the screenshots show a COMPLETE game session from start to finish?
 2. Was there evidence of winning or attempting to win (strategic moves, game completion states)?
-3. Look for: start screens → gameplay → end states (win/loss/game over)
+3. Look for progression: start screens → gameplay → end states (win/loss/game over)
+4. Check for multiple game rounds or replay attempts
 
-If you see evidence of game completion (win screen, loss screen, "game over", score summary, completion message), ADD BONUS POINTS (+50) to the playabilityScore.
+SCORING BONUSES:
+- If game was STARTED (moved from menu to active gameplay): +10 points
+- If strategic moves were made (not just random clicks): +10 points
+- If game reached a COMPLETION state (win/loss/game over screen): +20 points
+- If AI successfully played through to victory: +30 points
+- If multiple rounds were completed: +10 points per additional round (max +20)
+
+Maximum score with all bonuses: 100 points
 
 Return JSON with: 
 - playabilityScore (0-100, with bonus for completing games)

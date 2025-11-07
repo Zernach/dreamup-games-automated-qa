@@ -6,9 +6,16 @@
 **Author:** DreamUp Engineering Team
 
 **Recent Updates:**
+- **🎮 MULTI-ITERATION AI GAME COMPLETION LOOP** - LLM now performs up to 5 iterative analysis cycles, re-analyzing game state after each set of actions to ensure progression toward game completion
+- **🏆 Intelligent Game State Detection** - System detects game completion states (win/loss/game over) and automatically attempts to start new games for multiple rounds
+- **🔄 Dynamic Re-Analysis** - After initial actions, AI re-analyzes screenshots to adapt strategy based on current game state (menu/playing/completed)
+- **📈 Enhanced Scoring Bonuses** - Structured bonus system: +10 for starting game, +10 for strategic moves, +20 for completion, +30 for winning, +20 for multiple rounds
+- **🎯 State-Aware Action Planning** - AI explicitly identifies current game state and suggests context-appropriate actions (start buttons in menu, strategic moves during play, restart after completion)
+- **🔌 WebSocket Connection Improvements** - Fixed React Strict Mode double-mounting issues, added connection state management, improved error handling and logging
+- **⏱️ Page Load Strategy Fix** - Changed from `networkidle` to `domcontentloaded` wait strategy to handle games with continuous network activity (ads, analytics, WebSockets) that would otherwise timeout
 - **AI prompt updated to emphasize game completion** - LLM now focuses on completing at least one full game session and attempting to win, with strategic action sequences
-- **Evaluation includes game completion bonus** - Tests that successfully complete a full game (reaching win/loss/game-over states) receive +10-20 bonus points
-- **Enhanced test depth and duration** - Default screenshot count increased to 20, action count increased to 15, and timeout extended to 180s for more comprehensive testing
+- **Evaluation includes game completion bonus** - Tests that successfully complete a full game (reaching win/loss/game-over states) receive bonus points
+- **Enhanced test depth and duration** - Default screenshot count increased to 20, action count increased to 15 per iteration (up to 50 total), and timeout extended to 180s for more comprehensive testing
 - **Added exploratory interaction phase** - Additional keyboard and mouse interactions (arrows, WASD, space, rapid clicks) to capture diverse game states
 - **Increased wait times throughout test execution** - More thorough observation periods between actions (3.5-5s) for better state capture
 - **Added HTML DOM capture** - Each screenshot now includes a collapsible HTML DOM snapshot for debugging

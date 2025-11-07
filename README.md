@@ -73,8 +73,12 @@ dreamup-games-qa/
 - ✅ Game preset selection with live iframe previews
 - ✅ Quick-test 4 popular iframe-compatible games (Slither.io, Krunker.io, Minesweeper, Solitaire)
 - ✅ Shared type definitions
-- ✅ **Enhanced test depth** - Default 20 screenshots (up to 50), 15 AI actions, 5 exploratory interactions
-- ✅ **Extended test duration** - 3-5 minute tests with thorough observation periods (3.5-5s between actions)
+- ✅ **🎮 MULTI-ITERATION GAME COMPLETION LOOP** - AI performs up to 5 iterative cycles, re-analyzing state to ensure full game completion from start to finish
+- ✅ **🏆 Intelligent Completion Detection** - Automatically detects win/loss/game-over states and attempts to start new rounds for comprehensive testing
+- ✅ **🔄 Dynamic State-Based Re-Analysis** - AI adapts strategy based on current game state (menu → playing → completed)
+- ✅ **📈 Structured Scoring System** - Bonuses for starting (+10), strategic moves (+10), completion (+20), winning (+30), multiple rounds (+20)
+- ✅ **Enhanced test depth** - Default 20 screenshots (up to 50), 10 actions per iteration (up to 50 total), 5 exploratory interactions
+- ✅ **Extended test duration** - 3-5 minute tests with thorough observation periods (3.5s between actions)
 - ✅ **Improved Playwright interactions** - Enhanced canvas game interaction with robust click strategies
 - ✅ **Exploratory interaction phase** - Automated keyboard (arrows, WASD, space) and mouse testing
 - ✅ **Overlay/ad dismissal** - Automatic removal of blocking elements before testing
@@ -122,10 +126,13 @@ NODE_ENV=development
 OPENAI_API_KEY=your_key_here
 \`\`\`
 
-**Frontend** (\`frontend/.env\`):
+**Frontend** (\`frontend/.env.local\`):
 \`\`\`env
 VITE_API_URL=http://localhost:3000
+VITE_WS_URL=http://localhost:3000
 \`\`\`
+
+> **Note**: For the frontend, create `.env.local` (not `.env`) to ensure it's properly gitignored. You can copy from `.env.example`.
 
 4. **Start development servers**
 
@@ -145,6 +152,79 @@ npm run dev
 - Frontend: http://localhost:3001
 - Backend API: http://localhost:3000
 - Health Check: http://localhost:3000/health
+
+## Testing Game Completion Feature
+
+The AI system is now designed to **complete at least one full game from beginning to end**. Here's what happens during a test:
+
+### Multi-Iteration Loop Process
+
+1. **Initial Analysis** (Iteration 1)
+   - AI analyzes the game's initial state
+   - Identifies start buttons, menus, and interactive elements
+   - Suggests actions to BEGIN the game
+
+2. **Dynamic Re-Analysis** (Iterations 2-5)
+   - After each set of actions, AI re-analyzes the current state
+   - Adapts strategy based on what it sees:
+     - **Menu State**: Suggests clicking "Start" or "Play"
+     - **Active Gameplay**: Suggests strategic moves to win
+     - **Game Over State**: Suggests clicking "New Game" or "Play Again"
+
+3. **Completion Detection**
+   - System monitors for completion keywords: "game over", "you win", "you lost", "victory", "defeat", "final score"
+   - When detected, attempts to start a new round if time permits
+
+4. **Performance Bonuses**
+   - Starting the game: +10 points
+   - Making strategic moves: +10 points
+   - Reaching completion state: +20 points
+   - Successfully winning: +30 points
+   - Completing multiple rounds: +10 points per round (max +20)
+
+### Recommended Games for Testing
+
+Best games to demonstrate full completion:
+
+1. **Tic Tac Toe** (`https://codepen.io/alvaromontoro/full/BexWOw`)
+   - Simple, quick games (~30 seconds each)
+   - Clear win/loss states
+   - Easy for AI to complete multiple rounds
+
+2. **Solitaire** (`https://www.solitr.com/`)
+   - Strategic card game
+   - Clear completion states
+   - Good for testing strategic move planning
+
+3. **Minesweeper** (`https://minesweeper.online/`)
+   - Puzzle game with clear rules
+   - Win/loss states are obvious
+   - Tests AI's ability to make safe moves
+
+### Example Test Run
+
+```bash
+# Start the backend
+cd backend
+npm run dev
+
+# In another terminal, trigger a test via curl
+curl -X POST http://localhost:3000/api/test \
+  -H "Content-Type: application/json" \
+  -d '{
+    "gameUrl": "https://codepen.io/alvaromontoro/full/BexWOw",
+    "options": {
+      "timeout": 180000,
+      "screenshotCount": 50
+    }
+  }'
+```
+
+Watch the console logs to see:
+- `=== STARTING MULTI-ITERATION AI LOOP TO COMPLETE GAME ===`
+- `--- ITERATION X/5 ---`
+- `🎉 AI DETECTED GAME COMPLETION!`
+- `✅ Successfully completed at least one game!`
 
 ## API Endpoints
 

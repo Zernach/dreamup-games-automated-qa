@@ -73,11 +73,22 @@ export class PlaywrightService {
       const timeout = options?.timeout || 180000;
       page.setDefaultTimeout(timeout);
 
-      // Navigate to game URL
-      await page.goto(gameUrl, {
-        waitUntil: 'networkidle',
-        timeout
-      });
+      // Navigate to game URL with forgiving wait strategy
+      // Use 'domcontentloaded' instead of 'networkidle' because many games/embeds
+      // have continuous network activity (ads, analytics, websockets) that prevent networkidle
+      try {
+        await page.goto(gameUrl, {
+          waitUntil: 'domcontentloaded',
+          timeout
+        });
+      } catch (error) {
+        // If even domcontentloaded fails, try with 'commit' as last resort
+        console.warn('domcontentloaded wait failed, trying with commit:', error);
+        await page.goto(gameUrl, {
+          waitUntil: 'commit',
+          timeout: timeout / 2
+        });
+      }
 
       // Emit page loaded event
       onProgress?.({
@@ -85,8 +96,9 @@ export class PlaywrightService {
         data: { url: gameUrl, message: 'Game page loaded successfully' },
       });
 
-      // Wait for initial page to settle
-      await page.waitForTimeout(1000);
+      // Wait for initial page to settle and scripts to execute
+      // Extended wait since we're not using networkidle anymore
+      await page.waitForTimeout(3000);
 
       // Capture initial load screenshot
       const initialScreenshot = await this.captureScreenshot(page, 'initial-load');
@@ -192,75 +204,154 @@ export class PlaywrightService {
         },
       });
 
-      // Perform AI-suggested actions - increased action count for more comprehensive testing
-      const maxActions = Math.min(aiAnalysis.suggestedActions.length, 15);
-      for (let i = 0; i < maxActions; i++) {
-        const suggestion = aiAnalysis.suggestedActions[i];
+      // ENHANCED: Multi-iteration AI loop to ensure game completion
+      // We'll perform multiple rounds of AI analysis and actions until we detect game completion
+      const maxIterations = 5; // Multiple analysis cycles to ensure game completion
+      let gameCompleted = false;
+      let currentIteration = 0;
+      let totalActionsPerformed = 0;
 
-        try {
-          console.log(`\nAction ${i + 1}/${maxActions}: ${suggestion.action} on ${suggestion.target}`);
-          console.log(`Reason: ${suggestion.reason}`);
+      console.log('\n=== STARTING MULTI-ITERATION AI LOOP TO COMPLETE GAME ===');
 
-          // Take a before screenshot to help debug
-          const beforeHash = await this.getPageContentHash(page);
+      while (currentIteration < maxIterations && !gameCompleted && totalActionsPerformed < 50) {
+        currentIteration++;
+        console.log(`\n--- ITERATION ${currentIteration}/${maxIterations} ---`);
 
-          await this.performAction(page, suggestion.action, suggestion.target);
-          actionsPerformed.push(`${suggestion.action} on ${suggestion.target}: ${suggestion.reason}`);
+        // Use the latest analysis (or get new one after first iteration)
+        let currentAnalysis = aiAnalysis;
 
-          // Wait for game to respond to the action - increased for more thorough observation
-          await page.waitForTimeout(3500);
-
-          // Check if page content changed
-          const afterHash = await this.getPageContentHash(page);
-          const contentChanged = beforeHash !== afterHash;
-          console.log(`Content changed after action: ${contentChanged}`);
-
-          if (!contentChanged) {
-            console.log('⚠️ Warning: Page content did not change after action');
-          }
-
-          // Capture screenshot after action
-          const actionScreenshot = await this.captureScreenshot(
-            page,
-            `after-${suggestion.action}-${i + 1}`
-          );
-          screenshots.push(actionScreenshot);
-
-          // Emit action performed event
+        // After first iteration, re-analyze the current game state
+        if (currentIteration > 1 && screenshots.length > 2) {
+          console.log('Re-analyzing game state for next actions...');
           onProgress?.({
-            type: 'action-performed',
+            type: 'ai-analyzing',
             data: {
-              action: suggestion.action,
-              target: suggestion.target,
-              reason: suggestion.reason,
-              success: true,
-              contentChanged,
+              stage: `game-reanalysis-iteration-${currentIteration}`,
+              message: `AI is re-analyzing game state (iteration ${currentIteration})...`,
             },
           });
 
-          // Emit screenshot captured event
-          onProgress?.({
-            type: 'screenshot-captured',
-            data: {
-              screenshot: actionScreenshot,
-              progress: { current: 3 + i, total: estimatedTotal },
-            },
-          });
-        } catch (actionError) {
-          console.log(`Action ${i + 1} failed:`, actionError);
-          actionsPerformed.push(`${suggestion.action} on ${suggestion.target}: FAILED`);
+          const latestScreenshot = screenshots[screenshots.length - 1];
+          currentAnalysis = await openaiService.analyzeGameForActions(latestScreenshot.data);
+          console.log('Re-analysis complete:', currentAnalysis.detectedElements);
 
-          // Emit action performed event (with failure)
           onProgress?.({
-            type: 'action-performed',
+            type: 'ai-analysis-complete',
             data: {
-              action: suggestion.action,
-              target: suggestion.target,
-              reason: suggestion.reason,
-              success: false,
+              iteration: currentIteration,
+              detectedElements: currentAnalysis.detectedElements,
+              interactivityScore: currentAnalysis.interactivityScore,
+              suggestedActionsCount: currentAnalysis.suggestedActions.length,
             },
           });
         }
+
+        // Check if AI detected game completion
+        const completionKeywords = ['game over', 'you win', 'you won', 'you lose', 'you lost', 'victory', 'defeat', 'completed', 'finished', 'score:', 'final score'];
+        const hasCompletionIndicators = currentAnalysis.detectedElements.some(element =>
+          completionKeywords.some(keyword => element.toLowerCase().includes(keyword))
+        ) || currentAnalysis.visualAssessment.toLowerCase().includes('game over') ||
+          currentAnalysis.visualAssessment.toLowerCase().includes('completed');
+
+        if (hasCompletionIndicators) {
+          console.log('🎉 AI DETECTED GAME COMPLETION!');
+          gameCompleted = true;
+
+          // Try to start a new game if we have time
+          const hasNewGameOption = currentAnalysis.suggestedActions.some(action =>
+            action.target.toLowerCase().includes('new game') ||
+            action.target.toLowerCase().includes('play again') ||
+            action.target.toLowerCase().includes('restart')
+          );
+
+          if (hasNewGameOption && currentIteration < maxIterations) {
+            console.log('Attempting to start a new game...');
+            gameCompleted = false; // Continue loop to play another round
+          }
+        }
+
+        // Perform suggested actions for this iteration
+        const maxActionsThisIteration = Math.min(currentAnalysis.suggestedActions.length, 10);
+
+        for (let i = 0; i < maxActionsThisIteration && totalActionsPerformed < 50; i++) {
+          const suggestion = currentAnalysis.suggestedActions[i];
+
+          try {
+            console.log(`\nIteration ${currentIteration}, Action ${i + 1}/${maxActionsThisIteration}: ${suggestion.action} on ${suggestion.target}`);
+            console.log(`Reason: ${suggestion.reason}`);
+
+            // Take a before screenshot to help debug
+            const beforeHash = await this.getPageContentHash(page);
+
+            await this.performAction(page, suggestion.action, suggestion.target);
+            actionsPerformed.push(`[Iter ${currentIteration}] ${suggestion.action} on ${suggestion.target}: ${suggestion.reason}`);
+            totalActionsPerformed++;
+
+            // Wait for game to respond to the action
+            await page.waitForTimeout(3500);
+
+            // Check if page content changed
+            const afterHash = await this.getPageContentHash(page);
+            const contentChanged = beforeHash !== afterHash;
+            console.log(`Content changed after action: ${contentChanged}`);
+
+            if (!contentChanged) {
+              console.log('⚠️ Warning: Page content did not change after action');
+            }
+
+            // Capture screenshot after action
+            const actionScreenshot = await this.captureScreenshot(
+              page,
+              `iter${currentIteration}-action${i + 1}-${suggestion.action}`
+            );
+            screenshots.push(actionScreenshot);
+
+            // Emit action performed event
+            onProgress?.({
+              type: 'action-performed',
+              data: {
+                iteration: currentIteration,
+                action: suggestion.action,
+                target: suggestion.target,
+                reason: suggestion.reason,
+                success: true,
+                contentChanged,
+              },
+            });
+
+            // Emit screenshot captured event
+            onProgress?.({
+              type: 'screenshot-captured',
+              data: {
+                screenshot: actionScreenshot,
+                progress: { current: screenshots.length, total: estimatedTotal },
+              },
+            });
+          } catch (actionError) {
+            console.log(`Action ${i + 1} failed:`, actionError);
+            actionsPerformed.push(`[Iter ${currentIteration}] ${suggestion.action} on ${suggestion.target}: FAILED`);
+
+            // Emit action performed event (with failure)
+            onProgress?.({
+              type: 'action-performed',
+              data: {
+                iteration: currentIteration,
+                action: suggestion.action,
+                target: suggestion.target,
+                reason: suggestion.reason,
+                success: false,
+              },
+            });
+          }
+        }
+
+        console.log(`Iteration ${currentIteration} complete. Total actions performed: ${totalActionsPerformed}`);
+      }
+
+      if (gameCompleted) {
+        console.log('✅ Successfully completed at least one game!');
+      } else {
+        console.log(`⚠️ Completed ${currentIteration} iterations with ${totalActionsPerformed} actions, but did not detect explicit game completion.`);
       }
 
       // Perform additional exploratory interactions to capture more diverse states
