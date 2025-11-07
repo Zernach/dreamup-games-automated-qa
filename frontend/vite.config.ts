@@ -9,6 +9,7 @@ export default defineConfig({
             '@': path.resolve(__dirname, './src'),
         },
     },
+    publicDir: 'public',
     server: {
         port: 3001,
         host: 'localhost', // Explicitly bind to localhost only

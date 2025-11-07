@@ -18,8 +18,9 @@ export interface Screenshot {
   id: string;
   testId: string;
   label: string;
-  filePath: string;
-  fileSize: number;
+  filePath?: string;
+  data?: string; // base64 encoded image data URL
+  fileSize?: number;
   timestamp: Date;
 }
 
@@ -128,12 +129,106 @@ export interface ListTestsResponse {
 }
 
 // WebSocket Event Types
+export type WebSocketEventType =
+  | 'test:created'
+  | 'test:status-changed'
+  | 'test:browser-launched'
+  | 'test:page-loaded'
+  | 'test:screenshot-captured'
+  | 'test:action-performed'
+  | 'test:ai-analyzing'
+  | 'test:ai-analysis-complete'
+  | 'test:evaluation-complete'
+  | 'test:completed'
+  | 'test:error';
+
 export interface WebSocketEvent {
-  type: 'test:started' | 'test:browser-launched' | 'test:ui-detected' |
-        'test:screenshot-captured' | 'test:ai-analyzing' | 'test:completed' | 'test:error';
+  type: WebSocketEventType;
   testId: string;
   timestamp: Date;
   data?: any;
+}
+
+export interface TestCreatedEvent extends WebSocketEvent {
+  type: 'test:created';
+  data: {
+    testId: string;
+    gameUrl: string;
+    status: TestStatus;
+  };
+}
+
+export interface TestStatusChangedEvent extends WebSocketEvent {
+  type: 'test:status-changed';
+  data: {
+    status: TestStatus;
+    message?: string;
+  };
+}
+
+export interface ScreenshotCapturedEvent extends WebSocketEvent {
+  type: 'test:screenshot-captured';
+  data: {
+    screenshot: Screenshot;
+    progress: {
+      current: number;
+      total: number;
+    };
+  };
+}
+
+export interface ActionPerformedEvent extends WebSocketEvent {
+  type: 'test:action-performed';
+  data: {
+    action: string;
+    target: string;
+    reason: string;
+    success: boolean;
+  };
+}
+
+export interface AIAnalyzingEvent extends WebSocketEvent {
+  type: 'test:ai-analyzing';
+  data: {
+    stage: 'game-analysis' | 'quality-evaluation';
+    message: string;
+  };
+}
+
+export interface AIAnalysisCompleteEvent extends WebSocketEvent {
+  type: 'test:ai-analysis-complete';
+  data: {
+    detectedElements: string[];
+    interactivityScore: number;
+    suggestedActionsCount: number;
+  };
+}
+
+export interface EvaluationCompleteEvent extends WebSocketEvent {
+  type: 'test:evaluation-complete';
+  data: {
+    playabilityScore: number;
+    grade: Grade;
+    confidence: number;
+    issues: Issue[];
+    scoreComponents: ScoreComponents;
+    reasoning: string;
+  };
+}
+
+export interface TestCompletedEvent extends WebSocketEvent {
+  type: 'test:completed';
+  data: {
+    test: Test;
+  };
+}
+
+export interface TestErrorEvent extends WebSocketEvent {
+  type: 'test:error';
+  data: {
+    error: string;
+    message: string;
+  };
 }
 
 // Error Response

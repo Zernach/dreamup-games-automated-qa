@@ -20,117 +20,70 @@ This guide covers deploying the DreamUp Games QA backend to production using Rai
 4. Select your repository
 5. Choose **"Add variables later"**
 
-### 2. Add PostgreSQL Database
-
-1. In your Railway project, click **"+ New"**
-2. Select **"Database"** → **"PostgreSQL"**
-3. Railway will automatically provision a PostgreSQL database
-4. The `DATABASE_URL` environment variable will be automatically set
-
-### 3. Configure Environment Variables
+### 2. Configure Environment Variables
 
 In your Railway project settings, add these environment variables:
 
-\`\`\`env
-# Automatically set by Railway
-DATABASE_URL=postgresql://...
-
+```env
 # Add these manually
 NODE_ENV=production
 PORT=3000
 OPENAI_API_KEY=your_openai_api_key_here
-\`\`\`
+```
 
-### 4. Configure Build Settings
+### 3. Configure Build Settings
 
 Railway should auto-detect the build settings, but verify:
 
-**Root Directory:** \`backend\`
+**Root Directory:** `backend`
 
 **Build Command:**
-\`\`\`bash
-npm install && npx prisma generate && npm run build
-\`\`\`
+```bash
+npm install && npm run build
+```
 
 **Start Command:**
-\`\`\`bash
+```bash
 npm start
-\`\`\`
+```
 
 **Install Command:**
-\`\`\`bash
+```bash
 npm install
-\`\`\`
+```
 
-### 5. Add Railway Volume (for file storage)
+### 4. Add Railway Volume (for file storage)
 
 1. In Railway project settings, go to **"Volumes"**
 2. Click **"New Volume"**
-3. Set mount path: \`/data\`
-4. Set size: \`5GB\` (adjust based on needs)
+3. Set mount path: `/data`
+4. Set size: `5GB` (adjust based on needs)
 
-### 6. Run Database Migrations
-
-After first deployment, run migrations:
-
-1. Open Railway project **"Settings"** → **"Service"**
-2. Click on your backend service
-3. Go to **"Variables"** tab
-4. Click **"Railway CLI"** to open terminal
-5. Run:
-\`\`\`bash
-npx prisma migrate deploy
-npx prisma db seed
-\`\`\`
-
-Or use Railway CLI locally:
-\`\`\`bash
-railway login
-railway link [your-project-id]
-railway run npx prisma migrate deploy
-\`\`\`
-
-### 7. Get Backend URL
+### 5. Get Backend URL
 
 After deployment:
 1. Go to **"Settings"** → **"Networking"**
 2. Click **"Generate Domain"**
-3. Copy the URL (e.g., \`https://dreamup-qa-production.up.railway.app\`)
+3. Copy the URL (e.g., `https://dreamup-qa-production.up.railway.app`)
 
-### 8. Test Backend
+### 6. Test Backend
 
-\`\`\`bash
+```bash
 curl https://your-backend-url.railway.app/health
-\`\`\`
+```
 
 Expected response:
-\`\`\`json
+```json
 {
   "status": "healthy",
-  "database": "connected",
-  ...
+  "timestamp": "...",
+  "uptime": 123.45
 }
-\`\`\`
+```
 
 ---
 
 ## Part 2: Post-Deployment Configuration
-
-### Generate API Keys
-
-1. Use Railway CLI to connect to your backend:
-\`\`\`bash
-railway login
-railway link [your-project-id]
-railway run npx prisma studio
-\`\`\`
-
-2. In Prisma Studio, manually create API keys in the \`ApiKey\` table
-
-Or use the seed script:
-\`\`\`bash
-railway run npm run prisma:seed
-\`\`\`
 
 ### Monitor Application
 
@@ -148,7 +101,7 @@ Railway automatically supports WebSocket connections. Ensure:
 
 ---
 
-## Part 4: Continuous Deployment
+## Part 3: Continuous Deployment
 
 ### Automatic Deployments
 
@@ -159,31 +112,13 @@ Railway will automatically deploy when you push to your main branch.
 
 ---
 
-## Part 5: Troubleshooting
+## Part 4: Troubleshooting
 
 ### Backend Issues
 
-**Database connection fails:**
-\`\`\`bash
-# Check DATABASE_URL is set
-railway variables
-
-# Test database connection
-railway run npx prisma db pull
-\`\`\`
-
-**Migrations not applied:**
-\`\`\`bash
-# Apply migrations
-railway run npx prisma migrate deploy
-
-# Reset database (CAUTION: deletes data)
-railway run npx prisma migrate reset
-\`\`\`
-
 **Build fails:**
-- Check Node version matches (\`engines\` in package.json)
-- Verify all dependencies are in \`package.json\`, not just \`devDependencies\`
+- Check Node version matches (`engines` in package.json)
+- Verify all dependencies are in `package.json`, not just `devDependencies`
 - Review Railway build logs for specific errors
 
 ### Frontend Issues
@@ -201,16 +136,11 @@ railway run npx prisma migrate reset
 **Backend slow response:**
 - Check Railway metrics for resource usage
 - Consider upgrading Railway plan for more resources
-- Review database query performance
-- Add database indexes if needed
-
-**Database connection pool exhausted:**
-- Adjust Prisma connection pool settings in \`schema.prisma\`
-- Monitor active connections in Railway metrics
+- Optimize test execution logic
 
 ---
 
-## Part 6: Scaling
+## Part 5: Scaling
 
 ### Railway
 
@@ -222,13 +152,6 @@ railway run npx prisma migrate reset
 - Requires Redis for WebSocket adapter
 - Configure load balancer
 - Multiple Railway services
-
-### Database
-
-**PostgreSQL Scaling:**
-- Upgrade Railway database plan
-- Add read replicas (Pro plan)
-- Optimize queries and add indexes
 
 ### Storage
 
@@ -243,27 +166,15 @@ railway run npx prisma migrate reset
 
 ---
 
-## Part 7: Backup & Recovery
-
-### Database Backups
-
-Railway automatically backs up PostgreSQL daily. To create manual backup:
-
-\`\`\`bash
-# Export database
-railway run pg_dump $DATABASE_URL > backup.sql
-
-# Restore database
-railway run psql $DATABASE_URL < backup.sql
-\`\`\`
+## Part 6: Backup & Recovery
 
 ### Environment Variables Backup
 
 Export Railway environment variables:
 
-\`\`\`bash
+```bash
 railway variables > railway-env.txt
-\`\`\`
+```
 
 Store securely (not in git!).
 
@@ -271,7 +182,7 @@ Store securely (not in git!).
 
 ## Cost Estimates
 
-**Railway (Backend + Database):**
+**Railway (Backend):**
 - Starter: $5/month (500 hours, 8GB storage)
 - Developer: $20/month (shared CPU, 8GB RAM)
 - Pro: Custom pricing
@@ -288,15 +199,13 @@ Store securely (not in git!).
 
 ## Security Checklist
 
-- [ ] Database credentials secured (use Railway env vars)
-- [ ] API keys rotated regularly
+- [ ] API keys secured (use Railway env vars)
 - [ ] HTTPS enforced on both frontend and backend
 - [ ] CORS configured correctly
 - [ ] Rate limiting enabled
 - [ ] Environment variables not committed to git
 - [ ] Helmet security headers enabled
 - [ ] Input validation on all API endpoints
-- [ ] SQL injection prevention (Prisma parameterized queries)
 - [ ] Sensitive data not logged
 
 ---
@@ -304,6 +213,5 @@ Store securely (not in git!).
 ## Support
 
 - **Railway Docs:** https://docs.railway.app/
-- **Prisma Docs:** https://www.prisma.io/docs/
 
 For project-specific issues, open an issue on GitHub.

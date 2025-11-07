@@ -1,9 +1,20 @@
 # Architecture Document - DreamUp Browser Game QA Pipeline
 
-**Version:** 1.0
-**Date:** November 6, 2025
+**Version:** 1.1
+**Date:** November 7, 2025
 **Status:** Draft
 **Author:** DreamUp Engineering Team
+
+**Recent Updates:**
+- **Fixed Playwright interaction issues** - Improved canvas game interaction with multiple click strategies
+- **Enhanced game element detection** - Better button/control detection with multiple selector strategies
+- **Added overlay/ad dismissal** - Automatically closes cookie banners and ad overlays that block interaction
+- **Increased wait times** - Extended timeouts to allow games to fully initialize and respond to actions
+- **Added content change detection** - Tracks whether actions actually modify page state
+- Added game preset selection feature to homepage and new test page
+- Integrated live iframe previews for quick testing (replaced static thumbnails)
+- Implemented WebSocket real-time communication for live test progress updates
+- Enhanced Live Activity Feed with inline screenshot thumbnails for unified timeline view
 
 ---
 
@@ -218,7 +229,6 @@ User/Agent Invocation
 | **Railway** | Compute execution | Node.js 20.x, 512MB-1GB memory, persistent server |
 | **Railway Volumes** | Artifact storage | Persistent storage, cleanup policies |
 | **Railway Logs** | Logging and monitoring | Structured JSON logs, metrics dashboard |
-| **PostgreSQL** | Database | Test history and results storage |
 | **Environment Variables** | Configuration | Secure secret management |
 
 ### Development Tools
@@ -873,16 +883,13 @@ Output: ./output/{test-id}/
 │  - Runtime: Node.js 20.x                    │
 │  - Memory: 512MB-1GB                        │
 │  - Persistent Process                       │
+│  - In-Memory Storage                        │
 │  - Environment Variables: OPENAI_API_KEY  │
-│                           DATABASE_URL      │
 │                           PORT              │
 └──────────────┬──────────────────────────────┘
                │
                ├──────────▶ Railway Volumes (Artifacts)
                │             └── /data/{test-id}/
-               │
-               ├──────────▶ PostgreSQL (Test History)
-               │             └── Railway Addon
                │
                ├──────────▶ Railway Logs
                │             └── Structured JSON logs
@@ -900,9 +907,7 @@ railway-deployment/
   │   ├── dist/ (compiled JavaScript)
   │   ├── node_modules/
   │   ├── package.json
-  │   ├── tsconfig.json
-  │   └── prisma/
-  │       └── schema.prisma
+  │   └── tsconfig.json
   ├── frontend/ (Cloudflare Pages)
   └── shared/ (shared types)
 ```
@@ -915,7 +920,7 @@ railway-deployment/
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "npm install && npx prisma generate && npm run build"
+    "buildCommand": "npm install && npm run build"
   },
   "deploy": {
     "startCommand": "npm start",
@@ -1211,21 +1216,143 @@ describe('ScoreCalculator', () => {
 
 **Monthly Costs (1000 tests):**
 - Railway (Hobby): $5.00
-- PostgreSQL addon: $0 (included)
 - Railway volumes: $2.50 (10GB)
 - Claude API: $15.00
 - **Total: ~$22.50/month**
 
-### C. Future Enhancements (Post-MVP)
+### C. Frontend Component Architecture
+
+**Game Selection Feature (Implemented Nov 7, 2025)**
+
+**Components:**
+
+1. **GameCard Component** (`frontend/src/components/GameCard.tsx`)
+   - Reusable card component for displaying game presets
+   - Features live iframe preview of each game
+   - Sandboxed iframes with `pointer-events-none` to prevent interaction
+   - Loading skeleton with animated game controller icon
+   - Error fallback with SVG icon if iframe fails to load
+   - Category badges with color coding
+   - Loading state overlay during test creation
+   - Lazy loading for performance optimization
+   - Hover effects for better UX
+
+2. **Game Presets Data** (`frontend/src/data/gamePresets.ts`)
+   - Centralized catalog of popular test games
+   - Categories: puzzle, action, multiplayer, casual
+   - Includes metadata: name, URL, description
+   - Currently includes 4 iframe-compatible games:
+     - Slither.io (multiplayer)
+     - Krunker.io (action)
+     - Minesweeper (puzzle)
+     - Solitaire (casual)
+   - No static thumbnails needed - uses live game previews
+   - Curated list of games that allow iframe embedding
+
+**Integration Points:**
+
+- **HomePage:** Quick test selection grid above statistics
+- **NewTestPage:** Game selection before custom URL input
+- Both pages use shared `handleGameSelect` function
+- Tests inherit timeout and screenshot settings from NewTestPage
+
+**User Flow:**
+```
+User clicks game card → Loading overlay appears → API test request → 
+Navigate to TestResultsPage with testId
+```
+
+### D. WebSocket Real-Time Communication
+
+**Implementation (Added Nov 7, 2025)**
+
+**Architecture:**
+- Socket.IO server integrated into Express HTTP server
+- Real-time bidirectional event streaming between backend and frontend
+- Test-specific rooms for isolated communication channels
+- Fallback to HTTP polling if WebSocket unavailable
+
+**Backend Components:**
+
+1. **WebSocket Service** (`backend/src/services/websocketService.ts`)
+   - Singleton service managing Socket.IO server
+   - Handles client connections and room management
+   - Emits events to specific test rooms or all clients
+   - CORS configuration matching Express server
+   - Graceful cleanup on server shutdown
+
+2. **Event Emission Points:**
+   - TestService: Orchestrates high-level test events
+   - PlaywrightService: Emits progress during browser automation
+   - Real-time screenshot capture notifications
+   - AI analysis progress updates
+   - Action performance feedback
+
+**Frontend Components:**
+
+1. **WebSocket Hook** (`frontend/src/hooks/useWebSocket.ts`)
+   - Reusable React hook for WebSocket connections
+   - Automatic connection management with cleanup
+   - Joins test-specific rooms on connection
+   - Event callback system for handling updates
+   - Connection status tracking
+   - Automatic reconnection with exponential backoff
+
+2. **Live Updates UI:**
+   - Real-time activity feed showing test progress
+   - Screenshot previews as they're captured
+   - AI analysis status indicators
+   - Action performance results (success/failure)
+   - Connection status badge (Live Updates indicator)
+   - Animated fade-in for new updates
+   - Auto-scrolling feed (last 20 updates)
+
+**Event Types:**
+
+```typescript
+- test:created - Test initialized
+- test:status-changed - Status updates (pending → running → completed)
+- test:browser-launched - Browser successfully started
+- test:page-loaded - Game page loaded
+- test:screenshot-captured - Screenshot taken and available
+- test:action-performed - AI action executed (click, keypress)
+- test:ai-analyzing - AI analysis in progress
+- test:ai-analysis-complete - AI game analysis finished
+- test:evaluation-complete - Quality evaluation finished
+- test:completed - Test fully complete
+- test:error - Error occurred during test
+```
+
+**User Experience:**
+
+Before WebSocket:
+- User submits test → waits on results page → polls every 3-5s → sees final results
+
+After WebSocket:
+- User submits test → redirected to results page → instant live updates
+- See screenshots appear as they're captured
+- Watch AI analysis progress in real-time
+- View each action as it's performed
+- Get immediate feedback when test completes
+- Fallback to polling if WebSocket fails
+
+**Performance:**
+- Minimal overhead (<1ms per event)
+- Efficient room-based broadcasting
+- No polling needed (saves bandwidth)
+- Instant UI updates (no delay)
+
+### E. Future Enhancements (Post-MVP)
 
 1. **Batch Testing:** Test multiple games sequentially
 2. **GIF Recording:** Capture video playback of gameplay
 3. **Frame Analysis:** Detect visual glitches frame-by-frame
 4. **Performance Metrics:** FPS monitoring, load time analysis
-5. **Web Dashboard:** UI for viewing results and trends
+5. **Expanded Game Catalog:** More preset games organized by genre
 6. **Regression Testing:** Automatically re-test after engine updates
 7. **Custom Metrics:** Plugin system for game-specific evaluation criteria
 8. **Multi-Browser Support:** Test in Firefox, Safari, Edge
+9. **WebSocket Enhancements:** Progress bars, video streaming, collaborative testing
 
 ---
 

@@ -1,7 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
-import NewTestPage from './pages/NewTestPage';
 import TestResultsPage from './pages/TestResultsPage';
 
 export default function App() {
@@ -9,7 +8,6 @@ export default function App() {
         <Layout>
             <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/test/new" element={<NewTestPage />} />
                 <Route path="/test/:id" element={<TestResultsPage />} />
             </Routes>
         </Layout>

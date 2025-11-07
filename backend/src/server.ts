@@ -3,9 +3,11 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import { createServer } from 'http';
 import { errorHandler } from './middleware/errorHandler';
 import healthRouter from './routes/health';
 import testRouter from './routes/test';
+import { websocketService } from './services/websocketService';
 
 // Load environment variables
 dotenv.config();
@@ -47,16 +49,22 @@ app.use('/api', testRouter);
 // Error handling (must be last)
 app.use(errorHandler);
 
+// Create HTTP server and initialize WebSocket
+const httpServer = createServer(app);
+websocketService.initialize(httpServer);
+
 // Start server
-const server = app.listen(PORT, () => {
+const server = httpServer.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`🔌 WebSocket ready on ws://localhost:${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM signal received: closing HTTP server');
+  websocketService.close();
   server.close(() => {
     console.log('HTTP server closed');
   });

@@ -16,19 +16,20 @@ This full-stack application provides automated testing and quality assessment fo
                         │
                         ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                   Railway (Backend + DB)                     │
+│                   Railway (Backend)                          │
 │                                                              │
 │  ┌─────────────────────────────────────────────────────┐  │
 │  │  Express REST API + WebSocket                        │  │
 │  │  - Browser Automation (Playwright)                   │  │
 │  │  - Evidence Capture (Screenshots, Logs)              │  │
 │  │  - AI Evaluation (Claude API)                        │  │
+│  │  - In-Memory Storage                                 │  │
 │  └─────────────────────────────────────────────────────┘  │
 │                                                              │
-│  ┌─────────────────┐  ┌───────────────────────────────┐   │
-│  │   PostgreSQL    │  │    Railway Volumes            │   │
-│  │   (Test Data)   │  │    (Screenshots/Logs)         │   │
-│  └─────────────────┘  └───────────────────────────────┘   │
+│  ┌───────────────────────────────┐                         │
+│  │    Railway Volumes            │                         │
+│  │    (Screenshots/Logs)         │                         │
+│  └───────────────────────────────┘                         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -40,15 +41,16 @@ dreamup-games-qa/
 │   ├── src/
 │   │   ├── middleware/   # Express middleware
 │   │   ├── routes/       # API routes
-│   │   ├── services/     # Business logic
+│   │   ├── services/     # Business logic (in-memory storage)
+│   │   ├── types.ts      # TypeScript type definitions
 │   │   └── utils/        # Utilities
-│   ├── prisma/           # Database schema & migrations
 │   └── package.json
 │
 ├── frontend/             # React + Vite application
 │   ├── src/
 │   │   ├── pages/        # Page components
-│   │   ├── components/   # React components
+│   │   ├── components/   # React components (GameCard, Layout, etc.)
+│   │   ├── data/         # Game presets and static data
 │   │   ├── lib/          # API client & utilities
 │   │   └── styles/       # Global styles
 │   └── package.json
@@ -64,11 +66,16 @@ dreamup-games-qa/
 ### Current (MVP)
 - ✅ Full-stack monorepo with TypeScript
 - ✅ Express REST API with validation
-- ✅ PostgreSQL database with Prisma ORM
+- ✅ In-memory storage for test data
 - ✅ React + Vite frontend with TailwindCSS
 - ✅ Test submission and results viewing
 - ✅ Dashboard with statistics and test history
+- ✅ Game preset selection with live iframe previews
+- ✅ Quick-test 4 popular iframe-compatible games (Slither.io, Krunker.io, Minesweeper, Solitaire)
 - ✅ Shared type definitions
+- ✅ **Improved Playwright interactions** - Enhanced canvas game interaction with robust click strategies
+- ✅ **Overlay/ad dismissal** - Automatic removal of blocking elements before testing
+- ✅ **Content change detection** - Verifies that actions actually modify game state
 
 ### In Progress
 - 🚧 Browser automation integration (Epic 1-3)
@@ -86,7 +93,6 @@ dreamup-games-qa/
 ### Prerequisites
 
 - Node.js 20+
-- PostgreSQL 14+
 - npm 10+
 
 ### Installation
@@ -110,7 +116,6 @@ npm install
 \`\`\`env
 PORT=3000
 NODE_ENV=development
-DATABASE_URL="postgresql://user:password@localhost:5432/dreamup_qa"
 OPENAI_API_KEY=your_key_here
 \`\`\`
 
@@ -119,16 +124,7 @@ OPENAI_API_KEY=your_key_here
 VITE_API_URL=http://localhost:3000
 \`\`\`
 
-4. **Set up the database**
-
-\`\`\`bash
-cd backend
-npx prisma migrate dev
-npx prisma db seed
-cd ..
-\`\`\`
-
-5. **Start development servers**
+4. **Start development servers**
 
 \`\`\`bash
 # Terminal 1 - Backend
@@ -141,7 +137,7 @@ npm run dev:frontend
 npm run dev
 \`\`\`
 
-6. **Access the application**
+5. **Access the application**
 
 - Frontend: http://localhost:3001
 - Backend API: http://localhost:3000
@@ -187,29 +183,25 @@ See [API.md](./API.md) for full API documentation.
 **Backend:**
 - `npm run dev --workspace=backend` - Start backend dev server
 - `npm run build --workspace=backend` - Build backend
-- `npm run prisma:generate --workspace=backend` - Generate Prisma client
-- `npm run prisma:migrate --workspace=backend` - Run database migrations
-- `npm run prisma:studio --workspace=backend` - Open Prisma Studio
 
 **Frontend:**
 - `npm run dev --workspace=frontend` - Start frontend dev server
 - `npm run build --workspace=frontend` - Build frontend for production
 
-## Database Schema
+## Data Models
 
-Key models:
+Key types (stored in-memory):
 - **Test**: Test execution records with playability scores
 - **Issue**: Detected issues with severity and type
 - **Screenshot**: Captured screenshots with labels
 - **ConsoleLog**: Browser console messages
 - **NetworkError**: Failed network requests
-- **ApiKey**: API authentication keys
 
-See [backend/prisma/schema.prisma](./backend/prisma/schema.prisma) for full schema.
+See [backend/src/types.ts](./backend/src/types.ts) for full type definitions.
 
 ## Deployment
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions for Railway (Backend + PostgreSQL).
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions for Railway.
 
 ## Testing
 
@@ -240,6 +232,5 @@ This project is licensed under the MIT License - see [LICENSE](./LICENSE) file f
 
 - [Playwright](https://playwright.dev/) for browser automation
 - [Anthropic Claude](https://www.anthropic.com/) for AI evaluation
-- [Prisma](https://www.prisma.io/) for database ORM
 - [Vite](https://vitejs.dev/) for build tooling
 - [Railway](https://railway.app/) for backend hosting

@@ -37,15 +37,7 @@ router.get(
       }
 
       res.json({
-        test: {
-          ...test,
-          scoreComponents: {
-            visual: test.scoreVisual,
-            stability: test.scoreStability,
-            interaction: test.scoreInteraction,
-            load: test.scoreLoad,
-          },
-        },
+        test,
       });
     } catch (error) {
       next(error);
