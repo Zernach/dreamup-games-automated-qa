@@ -73,7 +73,10 @@ dreamup-games-qa/
 - ✅ Game preset selection with live iframe previews
 - ✅ Quick-test 4 popular iframe-compatible games (Slither.io, Krunker.io, Minesweeper, Solitaire)
 - ✅ Shared type definitions
+- ✅ **Enhanced test depth** - Default 20 screenshots (up to 50), 15 AI actions, 5 exploratory interactions
+- ✅ **Extended test duration** - 3-5 minute tests with thorough observation periods (3.5-5s between actions)
 - ✅ **Improved Playwright interactions** - Enhanced canvas game interaction with robust click strategies
+- ✅ **Exploratory interaction phase** - Automated keyboard (arrows, WASD, space) and mouse testing
 - ✅ **Overlay/ad dismissal** - Automatic removal of blocking elements before testing
 - ✅ **Content change detection** - Verifies that actions actually modify game state
 
@@ -152,11 +155,15 @@ npm run dev
   {
     "gameUrl": "https://example.com/game",
     "options": {
-      "timeout": 120000,
-      "screenshotCount": 5
+      "timeout": 180000,
+      "screenshotCount": 20
     }
   }
   \`\`\`
+  
+  **Default Values:**
+  - `timeout`: 180000ms (3 minutes) - Extended for thorough testing
+  - `screenshotCount`: 20 - Comprehensive state capture (max: 50)
 
 - `GET /api/test/:id` - Get test results by ID
 

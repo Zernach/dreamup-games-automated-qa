@@ -11,8 +11,8 @@ export default function HomePage() {
 
     // Custom URL form state
     const [gameUrl, setGameUrl] = useState('');
-    const [timeout, setTimeout] = useState('120000');
-    const [screenshotCount, setScreenshotCount] = useState('5');
+    const [timeout, setTimeout] = useState('180000');
+    const [screenshotCount, setScreenshotCount] = useState('50');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
 
@@ -182,7 +182,7 @@ export default function HomePage() {
                                         />
                                     </div>
                                     <p className="mt-2 text-sm text-gray-400">
-                                        Maximum test duration (default: 120000ms)
+                                        Maximum test duration (default: 180000ms)
                                     </p>
                                 </div>
 
@@ -196,14 +196,14 @@ export default function HomePage() {
                                             name="screenshotCount"
                                             id="screenshotCount"
                                             min="1"
-                                            max="10"
+                                            max="50"
                                             value={screenshotCount}
                                             onChange={(e) => setScreenshotCount(e.target.value)}
                                             className="block w-full rounded-md border-0 py-1.5 px-3 bg-gray-700 text-white shadow-sm ring-1 ring-inset ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-500 sm:text-sm sm:leading-6"
                                         />
                                     </div>
                                     <p className="mt-2 text-sm text-gray-400">
-                                        Number of screenshots to capture (default: 5)
+                                        Number of screenshots to capture (default: 20)
                                     </p>
                                 </div>
                             </div>
@@ -229,7 +229,7 @@ export default function HomePage() {
                                 <li>Detailed report is generated with playability score</li>
                             </ol>
                             <p className="mt-3 text-sm text-blue-200">
-                                Average test duration: ~2 minutes
+                                Average test duration: ~3-5 minutes
                             </p>
                         </div>
                     </div>

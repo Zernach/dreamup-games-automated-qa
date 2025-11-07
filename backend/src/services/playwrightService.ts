@@ -6,6 +6,7 @@ export interface PlaywrightScreenshot {
   id: string;
   label: string;
   data: string; // base64 encoded image
+  htmlDom?: string; // HTML DOM snapshot at time of screenshot
   timestamp: Date;
 }
 
@@ -68,8 +69,8 @@ export class PlaywrightService {
         viewport: { width: 1280, height: 720 },
       });
 
-      // Set timeout
-      const timeout = options?.timeout || 30000;
+      // Set timeout - increased default for longer, more in-depth tests
+      const timeout = options?.timeout || 180000;
       page.setDefaultTimeout(timeout);
 
       // Navigate to game URL
@@ -92,11 +93,12 @@ export class PlaywrightService {
       screenshots.push(initialScreenshot);
 
       // Emit screenshot captured event
+      const estimatedTotal = options?.screenshotCount || 50;
       onProgress?.({
         type: 'screenshot-captured',
         data: {
           screenshot: initialScreenshot,
-          progress: { current: 1, total: 5 },
+          progress: { current: 1, total: estimatedTotal },
         },
       });
 
@@ -148,8 +150,8 @@ export class PlaywrightService {
         console.log('No canvas to focus, continuing...');
       }
 
-      // Wait for game to initialize (many games need time to load assets)
-      await page.waitForTimeout(3000);
+      // Wait for game to initialize (many games need time to load assets) - increased for more thorough testing
+      await page.waitForTimeout(5000);
 
       // Capture post-initialization screenshot for AI analysis
       const analysisScreenshot = await this.captureScreenshot(page, 'ai-analysis-frame');
@@ -160,7 +162,7 @@ export class PlaywrightService {
         type: 'screenshot-captured',
         data: {
           screenshot: analysisScreenshot,
-          progress: { current: 2, total: 5 },
+          progress: { current: 2, total: estimatedTotal },
         },
       });
 
@@ -190,8 +192,8 @@ export class PlaywrightService {
         },
       });
 
-      // Perform AI-suggested actions
-      const maxActions = Math.min(aiAnalysis.suggestedActions.length, 5);
+      // Perform AI-suggested actions - increased action count for more comprehensive testing
+      const maxActions = Math.min(aiAnalysis.suggestedActions.length, 15);
       for (let i = 0; i < maxActions; i++) {
         const suggestion = aiAnalysis.suggestedActions[i];
 
@@ -205,8 +207,8 @@ export class PlaywrightService {
           await this.performAction(page, suggestion.action, suggestion.target);
           actionsPerformed.push(`${suggestion.action} on ${suggestion.target}: ${suggestion.reason}`);
 
-          // Wait for game to respond to the action (increased from 1500ms)
-          await page.waitForTimeout(2500);
+          // Wait for game to respond to the action - increased for more thorough observation
+          await page.waitForTimeout(3500);
 
           // Check if page content changed
           const afterHash = await this.getPageContentHash(page);
@@ -241,7 +243,7 @@ export class PlaywrightService {
             type: 'screenshot-captured',
             data: {
               screenshot: actionScreenshot,
-              progress: { current: 3 + i, total: 5 },
+              progress: { current: 3 + i, total: estimatedTotal },
             },
           });
         } catch (actionError) {
@@ -261,8 +263,85 @@ export class PlaywrightService {
         }
       }
 
-      // Wait for any final animations/loading
-      await page.waitForTimeout(2000);
+      // Perform additional exploratory interactions to capture more diverse states
+      console.log('\n=== Performing additional exploratory interactions ===');
+      const exploratoryActions = [
+        { action: 'hover', description: 'Hover over game area' },
+        { action: 'click-multiple', description: 'Multiple rapid clicks' },
+        { action: 'keyboard-arrows', description: 'Arrow key navigation' },
+        { action: 'keyboard-wasd', description: 'WASD movement' },
+        { action: 'keyboard-space', description: 'Space bar action' },
+      ];
+
+      for (let i = 0; i < exploratoryActions.length && screenshots.length < estimatedTotal - 1; i++) {
+        try {
+          const action = exploratoryActions[i];
+          console.log(`Exploratory action ${i + 1}: ${action.description}`);
+
+          // Perform the exploratory action
+          switch (action.action) {
+            case 'hover':
+              await page.mouse.move(640, 360);
+              await page.waitForTimeout(1000);
+              break;
+            case 'click-multiple':
+              for (let j = 0; j < 3; j++) {
+                await page.mouse.click(640, 360);
+                await page.waitForTimeout(500);
+              }
+              break;
+            case 'keyboard-arrows':
+              await page.keyboard.press('ArrowUp');
+              await page.waitForTimeout(500);
+              await page.keyboard.press('ArrowRight');
+              await page.waitForTimeout(500);
+              await page.keyboard.press('ArrowDown');
+              await page.waitForTimeout(500);
+              await page.keyboard.press('ArrowLeft');
+              break;
+            case 'keyboard-wasd':
+              await page.keyboard.press('KeyW');
+              await page.waitForTimeout(500);
+              await page.keyboard.press('KeyD');
+              await page.waitForTimeout(500);
+              await page.keyboard.press('KeyS');
+              await page.waitForTimeout(500);
+              await page.keyboard.press('KeyA');
+              break;
+            case 'keyboard-space':
+              await page.keyboard.press('Space');
+              await page.waitForTimeout(500);
+              await page.keyboard.press('Space');
+              break;
+          }
+
+          // Wait for response
+          await page.waitForTimeout(2000);
+
+          // Capture screenshot of this state
+          const exploratoryScreenshot = await this.captureScreenshot(
+            page,
+            `exploratory-${action.action}`
+          );
+          screenshots.push(exploratoryScreenshot);
+
+          // Emit screenshot captured event
+          onProgress?.({
+            type: 'screenshot-captured',
+            data: {
+              screenshot: exploratoryScreenshot,
+              progress: { current: screenshots.length, total: estimatedTotal },
+            },
+          });
+
+          console.log(`Captured exploratory screenshot: ${action.description}`);
+        } catch (error) {
+          console.log(`Exploratory action ${i + 1} failed:`, error);
+        }
+      }
+
+      // Wait for any final animations/loading - increased for comprehensive final state capture
+      await page.waitForTimeout(4000);
 
       // Capture final state screenshot
       const finalScreenshot = await this.captureScreenshot(page, 'final-state');
@@ -514,10 +593,20 @@ export class PlaywrightService {
 
     const base64Data = screenshotBuffer.toString('base64');
 
+    // Capture HTML DOM snapshot at the time of screenshot
+    let htmlDom: string | undefined;
+    try {
+      htmlDom = await page.content();
+    } catch (error) {
+      console.error('Failed to capture HTML DOM:', error);
+      htmlDom = undefined;
+    }
+
     return {
       id: uuidv4(),
       label,
       data: `data:image/png;base64,${base64Data}`,
+      htmlDom,
       timestamp: new Date(),
     };
   }

@@ -20,6 +20,7 @@ export interface Screenshot {
     label: string;
     filePath?: string;
     data?: string; // base64 encoded image data URL
+    htmlDom?: string; // HTML DOM snapshot at time of screenshot
     fileSize?: number;
     timestamp: Date;
 }

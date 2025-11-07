@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { apiClient } from '@/lib/api';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import CollapsibleHtml from '@/components/CollapsibleHtml';
 
 interface Test {
     id: string;
@@ -24,6 +25,7 @@ interface Test {
         label: string;
         filePath?: string;
         data?: string;
+        htmlDom?: string;
         timestamp: string;
     }>;
     issues?: Array<{
@@ -42,6 +44,7 @@ interface LiveUpdate {
         id: string;
         label: string;
         data?: string;
+        htmlDom?: string;
         timestamp: string;
     };
 }
@@ -110,7 +113,7 @@ export default function TestResultsPage() {
                     message = `AI analyzing: ${event.data.message}`;
                     break;
                 case 'test:ai-analysis-complete':
-                    message = `AI detected ${event.data.detectedElements.length} elements, interactivity score: ${event.data.interactivityScore}/100`;
+                    message = `AI detected ${event.data.detectedElements?.length || 0} elements, interactivity score: ${event.data.interactivityScore}/100`;
                     break;
                 case 'test:evaluation-complete':
                     message = `Evaluation complete: Score ${event.data.playabilityScore}, Grade ${event.data.grade}`;
@@ -122,7 +125,7 @@ export default function TestResultsPage() {
                         confidence: event.data.confidence,
                         scoreComponents: event.data.scoreComponents,
                         reasoning: event.data.reasoning,
-                        issues: event.data.issues,
+                        issues: event.data.issues || [],
                     } : null);
                     break;
                 case 'test:completed':
@@ -318,33 +321,45 @@ export default function TestResultsPage() {
                         {liveUpdates.map((update, index) => (
                             <div
                                 key={index}
-                                className="flex gap-3 py-2 px-3 hover:bg-gray-700 rounded-lg transition-colors animate-fade-in"
+                                className="py-2 px-3 hover:bg-gray-700 rounded-lg transition-colors animate-fade-in"
                             >
-                                {/* Screenshot thumbnail if available */}
-                                {update.screenshot?.data && (
-                                    <div className="flex-shrink-0">
-                                        <img
-                                            src={update.screenshot.data}
-                                            alt={update.screenshot.label}
-                                            className="w-32 h-20 object-cover rounded border border-gray-600 cursor-pointer hover:scale-105 transition-transform shadow-sm"
-                                            onClick={() => setModalImage({ src: update.screenshot!.data!, label: update.screenshot!.label })}
-                                            title="Click to view full size"
+                                <div className="flex gap-3">
+                                    {/* Screenshot thumbnail if available */}
+                                    {update.screenshot?.data && (
+                                        <div className="flex-shrink-0">
+                                            <img
+                                                src={update.screenshot.data}
+                                                alt={update.screenshot.label}
+                                                className="w-32 h-20 object-cover rounded border border-gray-600 cursor-pointer hover:scale-105 transition-transform shadow-sm"
+                                                onClick={() => setModalImage({ src: update.screenshot!.data!, label: update.screenshot!.label })}
+                                                title="Click to view full size"
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Message content */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="text-xs font-mono text-gray-400">
+                                            <span className="text-gray-500">[{update.timestamp}]</span>{' '}
+                                            <span className="text-gray-300">{update.message}</span>
+                                        </div>
+                                        {update.screenshot && (
+                                            <div className="mt-1 text-xs text-gray-500">
+                                                {update.screenshot.label}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Collapsible HTML DOM if available */}
+                                {update.screenshot?.htmlDom && (
+                                    <div className="mt-2">
+                                        <CollapsibleHtml
+                                            html={update.screenshot.htmlDom}
+                                            label={`DOM Snapshot - ${update.screenshot.label}`}
                                         />
                                     </div>
                                 )}
-
-                                {/* Message content */}
-                                <div className="flex-1 min-w-0">
-                                    <div className="text-xs font-mono text-gray-400">
-                                        <span className="text-gray-500">[{update.timestamp}]</span>{' '}
-                                        <span className="text-gray-300">{update.message}</span>
-                                    </div>
-                                    {update.screenshot && (
-                                        <div className="mt-1 text-xs text-gray-500">
-                                            {update.screenshot.label}
-                                        </div>
-                                    )}
-                                </div>
                             </div>
                         ))}
                     </div>

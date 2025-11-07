@@ -209,6 +209,7 @@ export class TestService {
               testId,
               label: event.data.screenshot.label,
               data: event.data.screenshot.data,
+              htmlDom: event.data.screenshot.htmlDom,
               timestamp: event.data.screenshot.timestamp,
             };
 
@@ -248,6 +249,7 @@ export class TestService {
             testId,
             label: ps.label,
             data: ps.data, // base64 encoded image
+            htmlDom: ps.htmlDom,
             timestamp: ps.timestamp,
           }));
           screenshots.set(testId, testScreenshots);

@@ -6,10 +6,16 @@
 **Author:** DreamUp Engineering Team
 
 **Recent Updates:**
+- **AI prompt updated to emphasize game completion** - LLM now focuses on completing at least one full game session and attempting to win, with strategic action sequences
+- **Evaluation includes game completion bonus** - Tests that successfully complete a full game (reaching win/loss/game-over states) receive +10-20 bonus points
+- **Enhanced test depth and duration** - Default screenshot count increased to 20, action count increased to 15, and timeout extended to 180s for more comprehensive testing
+- **Added exploratory interaction phase** - Additional keyboard and mouse interactions (arrows, WASD, space, rapid clicks) to capture diverse game states
+- **Increased wait times throughout test execution** - More thorough observation periods between actions (3.5-5s) for better state capture
+- **Added HTML DOM capture** - Each screenshot now includes a collapsible HTML DOM snapshot for debugging
+- **Collapsible HTML component** - Reusable component with copy/download functionality
 - **Fixed Playwright interaction issues** - Improved canvas game interaction with multiple click strategies
 - **Enhanced game element detection** - Better button/control detection with multiple selector strategies
 - **Added overlay/ad dismissal** - Automatically closes cookie banners and ad overlays that block interaction
-- **Increased wait times** - Extended timeouts to allow games to fully initialize and respond to actions
 - **Added content change detection** - Tracks whether actions actually modify page state
 - Added game preset selection feature to homepage and new test page
 - Integrated live iframe previews for quick testing (replaced static thumbnails)
@@ -77,11 +83,43 @@ Provide autonomous quality assessment of browser games through:
 
 ### Key Requirements
 
-- **Performance:** <2 minutes total execution time per game
+- **Performance:** 3-5 minutes total execution time per game (extended for more thorough testing)
 - **Accuracy:** 80%+ playability assessment accuracy vs human baseline
 - **Reliability:** <5% unhandled crash rate
-- **Cost:** <$0.02 per test execution
+- **Cost:** <$0.03 per test execution (slightly higher due to increased depth)
 - **Scalability:** Support concurrent test executions (10+ simultaneous tests)
+
+### Enhanced Testing Approach
+
+The system now performs more comprehensive testing with:
+
+**Extended Screenshot Collection:**
+- Default of 20 screenshots (up from 5) to capture more game states
+- Screenshots captured at: initial load, post-initialization, after each AI action, during exploratory interactions, and final state
+- Maximum configurable up to 50 screenshots for extremely detailed testing
+
+**Increased Action Depth:**
+- Up to 15 AI-suggested actions (up from 5) based on visual analysis
+- **Game Completion Strategy:** AI now prioritizes completing at least one full game session and attempting to win:
+  - Identifies start buttons/controls to initiate gameplay (highest priority)
+  - Analyzes game mechanics to make strategic moves toward victory
+  - Aims to reach win/loss/game-over states for complete gameplay assessment
+  - Tests that successfully complete games receive +10-20 bonus points in evaluation
+- Additional exploratory interaction phase with 5 standard game inputs:
+  - Mouse hover and positioning
+  - Multiple rapid clicks
+  - Arrow key navigation (up/down/left/right)
+  - WASD movement keys
+  - Space bar actions
+- Extended wait times between actions (3.5-5s) to allow game state changes to complete
+
+**Longer Observation Periods:**
+- Initial game load wait: 5 seconds (up from 3s)
+- Post-action wait: 3.5 seconds (up from 2.5s)
+- Final state observation: 4 seconds (up from 2s)
+- Default timeout: 180 seconds (up from 120s)
+
+These enhancements ensure more thorough game state exploration, better detection of interaction issues, and more comprehensive visual evidence for AI evaluation.
 
 ---
 
@@ -178,7 +216,7 @@ User/Agent Invocation
          │                 │
          │                 ▼
          ├──────────▶ Capture Evidence (Parallel)
-         │            ├── Take Screenshots (5x)
+         │            ├── Take Screenshots (20x default)
          │            ├── Record Console Logs
          │            └── Track Network Errors
          │                 │
@@ -643,7 +681,7 @@ File URLs: Generated for web access via Express static middleware
 interface TestConfig {
   gameUrl: string;
   outputDir: string;
-  timeout: number;           // milliseconds (default: 120000)
+  timeout: number;           // milliseconds (default: 180000)
   verbose: boolean;
   storageDir?: string;       // Storage directory for Railway volumes
   llmApiKey: string;
@@ -784,7 +822,7 @@ interface TestOptions {
 import { testGame } from 'dreamup-qa-pipeline';
 
 const report = await testGame('https://example.com/game', {
-  timeout: 90000,
+  timeout: 180000,
   verbose: true
 });
 
@@ -820,7 +858,7 @@ const response = await fetch('https://api.example.com/api/test', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
     gameUrl: 'https://example.com/game',
-    options: { timeout: 90000 }
+    options: { timeout: 180000, screenshotCount: 20 }
   })
 });
 ```
@@ -834,7 +872,8 @@ bun run qa.ts <game-url>
 # With options
 bun run qa.ts <game-url> \
   --output-dir ./my-tests \
-  --timeout 90000 \
+  --timeout 180000 \
+  --screenshot-count 20 \
   --verbose
 
 # Help

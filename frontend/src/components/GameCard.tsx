@@ -11,11 +11,15 @@ export default function GameCard({ game, onSelect, loading = false }: GameCardPr
     const [iframeLoaded, setIframeLoaded] = useState(false);
     const [iframeError, setIframeError] = useState(false);
 
-    const categoryColors = {
+    const categoryColors: Record<GamePreset['category'], string> = {
         puzzle: 'bg-purple-900 text-purple-300',
         action: 'bg-red-900 text-red-300',
         multiplayer: 'bg-blue-900 text-blue-300',
         casual: 'bg-green-900 text-green-300',
+        platformer: 'bg-yellow-900 text-yellow-300',
+        idle: 'bg-gray-700 text-gray-300',
+        broken: 'bg-red-950 text-red-400',
+        rpg: 'bg-indigo-900 text-indigo-300',
     };
 
     return (
