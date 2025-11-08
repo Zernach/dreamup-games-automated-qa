@@ -5,6 +5,11 @@ import { chromium } from 'playwright';
 
 const PLAYWRIGHT_CHANNELS = ['chromium', 'chromium-headless-shell'] as const;
 const DEFAULT_BROWSER_CACHE = path.resolve(process.cwd(), 'playwright-browsers');
+const BROWSER_CACHE_PATH =
+    process.env.PLAYWRIGHT_BROWSERS_PATH || DEFAULT_BROWSER_CACHE;
+
+// Ensure Playwright uses the same cache path at runtime
+process.env.PLAYWRIGHT_BROWSERS_PATH = BROWSER_CACHE_PATH;
 
 let installPromise: Promise<void> | null = null;
 
@@ -43,14 +48,13 @@ async function runPlaywrightInstall(): Promise<void> {
 
     const env = {
         ...process.env,
-        PLAYWRIGHT_BROWSERS_PATH:
-            process.env.PLAYWRIGHT_BROWSERS_PATH || DEFAULT_BROWSER_CACHE,
+        PLAYWRIGHT_BROWSERS_PATH: BROWSER_CACHE_PATH,
         npm_config_yes: process.env.npm_config_yes || 'true',
         PW_DISABLE_CLI_OUTPUT: process.env.PW_DISABLE_CLI_OUTPUT || '1',
         PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: undefined,
     } as NodeJS.ProcessEnv;
 
-    fs.mkdirSync(env.PLAYWRIGHT_BROWSERS_PATH!, { recursive: true });
+    fs.mkdirSync(BROWSER_CACHE_PATH, { recursive: true });
 
     await new Promise<void>((resolve, reject) => {
         const child = spawn(command, installArgs, {
@@ -90,7 +94,9 @@ export async function ensureChromiumInstalled(): Promise<void> {
     await installPromise;
 
     if (!(await browserExecutableExists())) {
-        throw new Error('Playwright Chromium binaries not found after installation.');
+        throw new Error(
+            `Playwright Chromium binaries not found after installation. Expected path: ${chromium.executablePath()}`
+        );
     }
 }
 
