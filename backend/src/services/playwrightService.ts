@@ -1,6 +1,7 @@
 import { chromium, Browser, Page } from 'playwright';
 import { v4 as uuidv4 } from 'uuid';
 import { openaiService, GameAnalysis } from './openaiService';
+import { ensureChromiumInstalled } from '../modules/browser/installer';
 
 export interface PlaywrightScreenshot {
   id: string;
@@ -32,12 +33,39 @@ export class PlaywrightService {
 
   // Initialize browser (reusable for multiple tests)
   private async ensureBrowser(): Promise<Browser> {
-    if (!this.browser || !this.browser.isConnected()) {
+    if (this.browser && this.browser.isConnected()) {
+      return this.browser;
+    }
+
+    // Ensure the Chromium binary is available in the runtime environment
+    await ensureChromiumInstalled();
+
+    try {
       this.browser = await chromium.launch({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
+    } catch (error) {
+      // Attempt a single retry after forcing an install in case the binary was removed mid-run
+      const message = error instanceof Error ? error.message : String(error);
+      const missingExecutable =
+        message.includes('Executable doesn\'t exist') ||
+        message.includes('Failed to launch chromium because executable doesn\'t exist');
+
+      if (missingExecutable) {
+        console.warn(
+          'Chromium launch failed due to missing executable. Re-installing and retrying...'
+        );
+        await ensureChromiumInstalled();
+        this.browser = await chromium.launch({
+          headless: true,
+          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        });
+      } else {
+        throw error;
+      }
     }
+
     return this.browser;
   }
 

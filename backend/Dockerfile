@@ -17,9 +17,9 @@ COPY src ./src
 # Build TypeScript
 RUN npm run build
 
-# Install Playwright browsers AFTER build (Chromium only for efficiency)
+# Install Playwright browsers AFTER build (Chromium + headless shell for Playwright v1.49)
 # This ensures browsers are installed with the final dependency tree
-RUN npx playwright install --with-deps chromium
+RUN npx playwright install --with-deps chromium chromium-headless-shell
 
 # Verify the browser was installed
 RUN ls -la /root/.cache/ms-playwright/ || echo "Warning: Playwright cache directory not found"
