@@ -1,5 +1,8 @@
+[providers]
+node = "20"
+
 [phases.setup]
-aptPkgs = [
+aptPackages = [
   "libnss3",
   "libnspr4",
   "libatk1.0-0",
@@ -18,7 +21,11 @@ aptPkgs = [
   "libcairo2",
   "libatspi2.0-0",
   "libxshmfence1",
-  "libglib2.0-0"
+  "libglib2.0-0",
+  "libexpat1",
+  "libx11-6",
+  "libxext6",
+  "libxcb1"
 ]
 
 [phases.install]
