@@ -8,8 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "vitest",
-    "lint": "eslint src --ext .ts",
-    "postinstall": "npx playwright install --with-deps chromium || npx playwright install chromium"
+    "lint": "eslint src --ext .ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
