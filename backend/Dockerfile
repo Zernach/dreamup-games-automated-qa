@@ -10,6 +10,9 @@ COPY package*.json ./
 # Install all dependencies (including devDependencies for build)
 RUN npm ci
 
+# Install Playwright browsers (Chromium only for efficiency)
+RUN npx playwright install chromium
+
 # Copy source code and config files
 COPY tsconfig.json ./
 COPY src ./src
