@@ -1,5 +1,5 @@
 # Use official Playwright image which includes all system dependencies
-FROM mcr.microsoft.com/playwright:v1.48.2-jammy
+FROM mcr.microsoft.com/playwright:v1.49.1-jammy
 
 # Set working directory
 WORKDIR /app
@@ -19,13 +19,10 @@ RUN npm run build
 
 # Install Playwright browsers AFTER build (Chromium only for efficiency)
 # This ensures browsers are installed with the final dependency tree
-RUN npx playwright install chromium
+RUN npx playwright install --with-deps chromium
 
 # Verify the browser was installed
 RUN ls -la /root/.cache/ms-playwright/ || echo "Warning: Playwright cache directory not found"
-
-# Don't prune - keep all dependencies to ensure Playwright works
-# RUN npm prune --production
 
 # Expose port (Railway will set this via PORT env var)
 EXPOSE 3000
