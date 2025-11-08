@@ -10,9 +10,6 @@ COPY package*.json ./
 # Install all dependencies (including devDependencies for build)
 RUN npm ci
 
-# Install Playwright browsers (Chromium only for efficiency)
-RUN npx playwright install chromium
-
 # Copy source code and config files
 COPY tsconfig.json ./
 COPY src ./src
@@ -20,8 +17,15 @@ COPY src ./src
 # Build TypeScript
 RUN npm run build
 
-# Remove devDependencies to reduce image size
-RUN npm prune --production
+# Install Playwright browsers AFTER build (Chromium only for efficiency)
+# This ensures browsers are installed with the final dependency tree
+RUN npx playwright install chromium
+
+# Verify the browser was installed
+RUN ls -la /root/.cache/ms-playwright/ || echo "Warning: Playwright cache directory not found"
+
+# Don't prune - keep all dependencies to ensure Playwright works
+# RUN npm prune --production
 
 # Expose port (Railway will set this via PORT env var)
 EXPOSE 3000
