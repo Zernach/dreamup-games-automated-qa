@@ -42,7 +42,7 @@ aptPackages = [
 ]
 
 [phases.install]
-cmds = ["npm ci", "npx playwright install chromium"]
+cmds = ["npm ci", "npx playwright install --with-deps chromium"]
 
 [phases.build]
 cmds = ["npm run build"]
