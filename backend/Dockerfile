@@ -4,6 +4,9 @@ FROM mcr.microsoft.com/playwright:v1.49.1-jammy
 # Set working directory
 WORKDIR /app
 
+# Ensure that build-time and runtime both use the same browser cache path
+ENV PLAYWRIGHT_BROWSERS_PATH=/app/playwright-browsers
+
 # Copy package files
 COPY package*.json ./
 
