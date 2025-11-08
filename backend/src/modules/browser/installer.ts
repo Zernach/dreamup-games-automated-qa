@@ -1,20 +1,21 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
-import { chromium } from 'playwright';
 
 const PLAYWRIGHT_CHANNELS = ['chromium', 'chromium-headless-shell'] as const;
 const DEFAULT_BROWSER_CACHE = path.resolve(process.cwd(), 'playwright-browsers');
 const BROWSER_CACHE_PATH =
     process.env.PLAYWRIGHT_BROWSERS_PATH || DEFAULT_BROWSER_CACHE;
 
-// Ensure Playwright uses the same cache path at runtime
+// Ensure Playwright uses the same cache path at runtime - MUST be set before importing playwright
 process.env.PLAYWRIGHT_BROWSERS_PATH = BROWSER_CACHE_PATH;
 
 let installPromise: Promise<void> | null = null;
 
 async function browserExecutableExists(): Promise<boolean> {
     try {
+        // Dynamic import to ensure PLAYWRIGHT_BROWSERS_PATH is already set
+        const { chromium } = await import('playwright');
         const executablePath = chromium.executablePath();
         if (!executablePath) {
             return false;
@@ -94,6 +95,7 @@ export async function ensureChromiumInstalled(): Promise<void> {
     await installPromise;
 
     if (!(await browserExecutableExists())) {
+        const { chromium } = await import('playwright');
         throw new Error(
             `Playwright Chromium binaries not found after installation. Expected path: ${chromium.executablePath()}`
         );

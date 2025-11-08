@@ -6,6 +6,7 @@
 **Author:** DreamUp Engineering Team
 
 **Recent Updates:**
+- **🔧 PLAYWRIGHT BROWSER PATH FIX** - Fixed browser installation path mismatch by using dynamic imports to ensure PLAYWRIGHT_BROWSERS_PATH environment variable is set before Playwright initializes. This resolves deployment issues where Chromium downloads to custom paths (e.g., `/app/playwright-browsers/`) but Playwright looks in default locations.
 - **🎮 MULTI-ITERATION AI GAME COMPLETION LOOP** - LLM now performs up to 5 iterative analysis cycles, re-analyzing game state after each set of actions to ensure progression toward game completion
 - **🏆 Intelligent Game State Detection** - System detects game completion states (win/loss/game over) and automatically attempts to start new games for multiple rounds
 - **🔄 Dynamic Re-Analysis** - After initial actions, AI re-analyzes screenshots to adapt strategy based on current game state (menu/playing/completed)
@@ -922,6 +923,7 @@ Output: ./output/{test-id}/
 │  ┌────────────────────────────────────────┐ │
 │  │  Playwright with Chromium              │ │
 │  │  - Chromium browser                    │ │
+│  │  - Custom browser path via env var    │ │
 │  │  - System libraries                    │ │
 │  └────────────────────────────────────────┘ │
 │                                              │
@@ -932,6 +934,7 @@ Output: ./output/{test-id}/
 │  - In-Memory Storage                        │
 │  - Environment Variables: OPENAI_API_KEY  │
 │                           PORT              │
+│                           PLAYWRIGHT_BROWSERS_PATH │
 └──────────────┬──────────────────────────────┘
                │
                ├──────────▶ Railway Volumes (Artifacts)
@@ -943,6 +946,30 @@ Output: ./output/{test-id}/
                └──────────▶ Anthropic API
                              └── Claude 3.5 Sonnet
 ```
+
+**Playwright Browser Path Configuration:**
+
+To ensure Playwright uses the correct browser installation path in containerized environments, we use dynamic imports:
+
+1. **Problem:** Playwright determines browser paths when its modules are imported, before environment variables can be set.
+
+2. **Solution:** 
+   - Set `PLAYWRIGHT_BROWSERS_PATH` environment variable BEFORE importing Playwright
+   - Use dynamic `import()` statements instead of static imports for Playwright modules
+   - This ensures the environment variable is respected when Playwright initializes
+
+3. **Implementation:**
+   ```typescript
+   // Set environment variable first
+   process.env.PLAYWRIGHT_BROWSERS_PATH = '/app/playwright-browsers';
+   
+   // Then dynamically import Playwright
+   const { chromium } = await import('playwright');
+   ```
+
+4. **Files Modified:**
+   - `backend/src/modules/browser/installer.ts` - Browser installation verification
+   - `backend/src/services/playwrightService.ts` - Browser launch logic
 
 ### Deployment Package Structure
 
@@ -1403,6 +1430,6 @@ After WebSocket:
 ---
 
 **Document Status:** Complete - Ready for Development
-**Version:** 1.0
-**Last Updated:** November 6, 2025
+**Version:** 1.1
+**Last Updated:** November 8, 2025
 **Next Steps:** Begin Epic 1 implementation (Sprint 1)

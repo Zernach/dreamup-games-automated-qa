@@ -1,4 +1,4 @@
-import { chromium, Browser, Page } from 'playwright';
+import { Browser, Page } from 'playwright';
 import { v4 as uuidv4 } from 'uuid';
 import { openaiService, GameAnalysis } from './openaiService';
 import { ensureChromiumInstalled } from '../modules/browser/installer';
@@ -39,6 +39,9 @@ export class PlaywrightService {
 
     // Ensure the Chromium binary is available in the runtime environment
     await ensureChromiumInstalled();
+
+    // Dynamic import to ensure PLAYWRIGHT_BROWSERS_PATH is set before importing
+    const { chromium } = await import('playwright');
 
     try {
       this.browser = await chromium.launch({
