@@ -9,7 +9,7 @@
     "start": "node dist/server.js",
     "test": "vitest",
     "lint": "eslint src --ext .ts",
-    "postinstall": "npx playwright install --with-deps chromium"
+    "postinstall": "npx playwright install chromium"
   },
   "dependencies": {
     "cors": "^2.8.5",
