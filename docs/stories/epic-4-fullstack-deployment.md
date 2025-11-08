@@ -201,7 +201,7 @@ so that **I can build the web UI**.
 4. TypeScript configured with strict mode
 5. Shared types imported from `/shared/types.ts`
 6. API client configured to call Railway backend
-7. Environment variables: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WS_URL`
+7. Environment variables: `VITE_API_URL`, `VITE_WS_URL`
 8. Home page renders with placeholder content
 9. Build succeeds: `npm run build` produces static output
 10. Dev server runs: `npm run dev` serves app locally
