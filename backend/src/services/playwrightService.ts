@@ -315,8 +315,8 @@ export class PlaywrightService {
         if (gameUrl.includes('tictactoe') || gameUrl.includes('tic-tac-toe')) {
           try {
             const boardState = await page.evaluate(() => {
-              const squares = Array.from(document.querySelectorAll('.square, [class*="square"], [class*="cell"]'));
-              const filledSquares = squares.filter(sq => {
+              const squares = Array.from(document.querySelectorAll('.square, [class*="square"], [class*="cell"]')) as Element[];
+              const filledSquares = squares.filter((sq: Element) => {
                 const hasX = sq.classList.contains('x') || sq.querySelector('.x') !== null;
                 const hasO = sq.classList.contains('o') || sq.querySelector('.o') !== null;
                 return hasX || hasO;
@@ -328,7 +328,7 @@ export class PlaywrightService {
 
               // Check for restart button visibility (appears when game ends)
               const restartButton = document.querySelector('.restart');
-              const restartVisible = restartButton && window.getComputedStyle(restartButton).display !== 'none';
+              const restartVisible = !!(restartButton && window.getComputedStyle(restartButton).display !== 'none');
 
               return {
                 filledCount: filledSquares.length,
@@ -504,8 +504,8 @@ export class PlaywrightService {
             if (isTicTacToe) {
               try {
                 const boardState = await page.evaluate(() => {
-                  const squares = Array.from(document.querySelectorAll('.square, [class*="square"], [class*="cell"]'));
-                  const filledSquares = squares.filter(sq => {
+                  const squares = Array.from(document.querySelectorAll('.square, [class*="square"], [class*="cell"]')) as Element[];
+                  const filledSquares = squares.filter((sq: Element) => {
                     const hasX = sq.classList.contains('x') || sq.querySelector('.x') !== null;
                     const hasO = sq.classList.contains('o') || sq.querySelector('.o') !== null;
                     return hasX || hasO;
@@ -753,23 +753,23 @@ export class PlaywrightService {
         const visibleText = document.body.innerText || '';
 
         // Get game board state for tic-tac-toe and similar games
-        const squares = Array.from(document.querySelectorAll('.square, [class*="cell"], [class*="tile"], [class*="card"]'));
-        const squareStates = squares.map(sq => {
-          const classes = sq.className || '';
+        const squares = Array.from(document.querySelectorAll('.square, [class*="cell"], [class*="tile"], [class*="card"]')) as Element[];
+        const squareStates = squares.map((sq: Element) => {
+          const classes = (sq as HTMLElement).className || '';
           const hasX = classes.includes('x') || sq.querySelector('.x');
           const hasO = classes.includes('o') || sq.querySelector('.o');
-          const isEmpty = !hasX && !hasO && (!sq.textContent || sq.textContent.trim() === '');
+          const isEmpty = !hasX && !hasO && (!(sq as HTMLElement).textContent || (sq as HTMLElement).textContent.trim() === '');
           return hasX ? 'X' : hasO ? 'O' : isEmpty ? '_' : '?';
         }).join('');
 
         // Get score/status displays
-        const scoreElements = Array.from(document.querySelectorAll('[class*="score"], [class*="status"], [id*="score"], [id*="status"]'));
-        const scores = scoreElements.map(el => el.textContent || '').join('|');
+        const scoreElements = Array.from(document.querySelectorAll('[class*="score"], [class*="status"], [id*="score"], [id*="status"]')) as Element[];
+        const scores = scoreElements.map((el: Element) => (el as HTMLElement).textContent || '').join('|');
 
         // Get button states (disabled/enabled)
-        const buttons = Array.from(document.querySelectorAll('button, [role="button"]'));
-        const buttonStates = buttons.map(btn => {
-          const text = btn.textContent || '';
+        const buttons = Array.from(document.querySelectorAll('button, [role="button"]')) as Element[];
+        const buttonStates = buttons.map((btn: Element) => {
+          const text = (btn as HTMLElement).textContent || '';
           const disabled = btn.hasAttribute('disabled') || btn.classList.contains('disabled');
           return `${text}:${disabled ? 'D' : 'E'}`;
         }).join('|');
@@ -1061,8 +1061,8 @@ export class PlaywrightService {
               // If we didn't find an empty square, check if game is over (all squares filled)
               if (!clicked) {
                 const allFilled = await page.evaluate(() => {
-                  const squares = Array.from(document.querySelectorAll('.square, [class*="square"]'));
-                  return squares.every(sq => {
+                  const squares = Array.from(document.querySelectorAll('.square, [class*="square"]')) as Element[];
+                  return squares.every((sq: Element) => {
                     const hasX = sq.classList.contains('x') || sq.querySelector('.x');
                     const hasO = sq.classList.contains('o') || sq.querySelector('.o');
                     return hasX || hasO;
@@ -1109,9 +1109,9 @@ export class PlaywrightService {
             if (lowerTarget.includes(position.replace('-', ' ')) || lowerTarget.includes(position)) {
               // Before clicking, verify this square is empty
               const isEmpty = await page.evaluate(({ x, y }) => {
-                const element = document.elementFromPoint(x, y);
+                const element = document.elementFromPoint(x, y) as Element | null;
                 if (!element) return false;
-                const square = element.closest('.square, [class*="square"]');
+                const square = element.closest('.square, [class*="square"]') as Element | null;
                 if (!square) return false;
                 const hasX = square.classList.contains('x') || square.querySelector('.x');
                 const hasO = square.classList.contains('o') || square.querySelector('.o');
