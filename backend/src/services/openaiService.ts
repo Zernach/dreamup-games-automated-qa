@@ -63,6 +63,17 @@ PRIMARY OBJECTIVE: Your goal is to COMPLETE AT LEAST ONE FULL GAME SESSION and T
 - Complete the full game flow from start to finish
 - If you fail the first attempt, suggest actions to try again
 
+CRITICAL: For TIC-TAC-TOE games specifically:
+- Analyze the current board state: identify which squares have X, which have O, and which are empty
+- Make STRATEGIC moves: block opponent wins, create winning opportunities, take center if available
+- Click on EMPTY squares only - never click squares that already have X or O
+- Look for the game board (usually 3x3 grid of squares) and identify clickable empty cells
+- After each move, wait for the opponent (computer) to respond before making the next move
+- Continue playing until the game ends (win, loss, or tie)
+- If you see a "restart" or "new game" button after game ends, click it to play again
+- CRITICAL: You MUST suggest enough moves to complete the entire game - typically 5-9 moves for tic-tac-toe
+- Do not stop suggesting moves until you see clear game completion indicators (all squares filled, win message, restart button visible)
+
 Focus on:
 - START BUTTONS and initialization (highest priority)
 - Game controls and interactive elements (cards, tiles, pieces, etc.)
@@ -91,10 +102,15 @@ IMPORTANT: For canvas-based games (games rendered in a <canvas> element):
 - Suggest "click on canvas" as a primary action to start the game
 - Suggest keyboard controls (arrow keys, WASD, space bar, enter) to play
 - Look for UI overlays on top of canvas (start buttons, menus)
-- For card/board games: identify clickable cards, tiles, or pieces to make strategic moves
+- For card/board games: identify draggable cards, tiles, or pieces and use "drag" actions to move them strategically
+- IMPORTANT: If you see cards, tiles, or game pieces that need to be moved, use "drag" actions, not just "click" actions
 
 For puzzle/strategy games: prioritize moves that solve the puzzle or advance toward winning
 For action games: suggest sequences of moves that complete levels or objectives
+For card games (Solitaire, Spider Solitaire, etc.): ALWAYS use drag actions to move cards between piles, foundations, and tableau columns
+For tile-based puzzle games (Mahjong, match-3, etc.): ALWAYS use drag actions to move tiles or pieces
+For board games: use drag actions to move pieces on the board
+For games with draggable UI elements: use drag actions instead of clicks when elements need to be moved from one location to another
 
 GAME STATE AWARENESS:
 - If you see a start screen or menu, suggest clicking "Start" or "Play" IMMEDIATELY
@@ -102,16 +118,29 @@ GAME STATE AWARENESS:
 - If you see a game over state, suggest clicking "New Game" or "Play Again" to start another round
 - Analyze the CURRENT state and suggest actions that move forward from that state
 
+FOR TIC-TAC-TOE SPECIFICALLY:
+- When analyzing the board, identify the current state: "Board shows X in top-left, O in center, empty squares: top-center, top-right, middle-left, middle-right, bottom-left, bottom-center, bottom-right"
+- Suggest clicking on SPECIFIC empty squares with strategic reasoning: "Click top-center square to block opponent's potential win" or "Click center square to control the board"
+- NEVER suggest clicking squares that already have X or O
+- After suggesting a move, wait for the computer's response before suggesting the next move
+- Continue suggesting moves until the game ends (win, loss, or tie detected)
+- CRITICAL: Suggest AT LEAST 5-10 actions to ensure the game is completed from start to finish
+- If you see all squares filled or a restart button visible, suggest clicking the restart button to start a new game
+- Your goal is to play through MULTIPLE complete games if possible - don't stop after just one game
+
 Return JSON with:
 - detectedElements: Array of strings describing visible elements (start buttons, game pieces, score displays, canvas, menus, game over screens, etc.)
   - EXPLICITLY mention if you see: "start button", "new game button", "game over screen", "win/loss message", "play again button"
 - suggestedActions: Array of {action: string, target: string, reason: string}
   - action can be: "click", "press key", "hover", "scroll", "drag"
-  - target describes what to interact with (e.g., "canvas", "start button", "ace of spades card", "arrow keys")
+  - target describes what to interact with (e.g., "canvas", "start button", "ace of spades card", "arrow keys", "card from deck to foundation", "piece from position A to position B")
   - reason explains how this action advances toward COMPLETING and WINNING the game
   - PRIORITIZE actions that: 1) Start the game, 2) Make winning moves, 3) Complete the game, 4) Start a new game after completion
   - If the game is in a start state, the FIRST action MUST be to start/begin the game
   - If the game is in an end state, the FIRST action MUST be to restart/play again
+  - CRITICAL: For games with cards, tiles, pieces, or draggable elements (Solitaire, Mahjong, puzzle games, board games), ALWAYS suggest "drag" actions to move pieces around. Many games REQUIRE drag-and-drop to play properly!
+  - When you see cards, tiles, puzzle pieces, game pieces, or draggable UI elements, prioritize drag actions over simple clicks
+  - For drag actions, specify both source and destination in the target (e.g., "drag card from deck to foundation", "drag tile from position A to position B")
 - visualAssessment: String describing visual quality, CURRENT GAME STATE (menu/playing/game over), and what needs to be done next
   - Explicitly state if you see: "Game is in START menu state", "Game is ACTIVELY PLAYING", "Game is in GAME OVER/COMPLETE state"
 - interactivityScore: Number 0-100 indicating how interactive the game appears

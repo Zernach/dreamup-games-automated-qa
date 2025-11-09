@@ -19,6 +19,7 @@ build/
 .env.test.local
 .env.production
 .env.production.local
+playwright-browsers/
 
 # Logs
 logs
